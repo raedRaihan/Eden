@@ -53,4 +53,5 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     implementation("com.backendless:java-sdk-common:7.0.9")
     implementation("com.backendless:android-client-sdk:7.0.9")
+    implementation("com.google.android.gms:play-services-auth:22.0.0")
 }
