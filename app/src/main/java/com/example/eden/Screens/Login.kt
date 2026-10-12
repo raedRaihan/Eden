@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 
 class Login
 {
@@ -22,7 +23,8 @@ class Login
     fun loginScreen(
         onGoggleSignIn: () -> Unit,
         loading: Boolean = false,
-        error: String? = null
+        error: String? = null,
+        navController: NavController
     )
     {
         Column(
@@ -42,6 +44,57 @@ class Login
             {
                 Text("Login in with Google")
             }
+            Text(
+                text="Will delete these buttons below later",
+                style = MaterialTheme.typography.headlineMedium
+            )
+            // will delete all these buttons later
+            Button(onClick = {navController.navigate("accountSettings")})
+            {
+                Text("Go to Account Settings")
+            }
+            Button(onClick = {navController.navigate("adoptionApproval")})
+            {
+                Text("Go to Adoption Approval")
+            }
+            Button(onClick = {navController.navigate("calendar")})
+            {
+                Text("Go to Calendar")
+            }
+            Button(onClick = {navController.navigate("createAnimalProfile")})
+            {
+                Text("Go to Create Animal Profile")
+            }
+            Button(onClick = {navController.navigate("createUserProfile")})
+            {
+                Text("Go to Create User Profile")
+            }
+            Button(onClick = {navController.navigate("home")})
+            {
+                Text("Go to Home")
+            }
+            Button(onClick = {navController.navigate("notifications")})
+            {
+                Text("Go to Notifications")
+            }
+            Button(onClick = {navController.navigate("petProfile")})
+            {
+                Text("Go to Pet Profile")
+            }
+            Button(onClick = {navController.navigate("preferences")})
+            {
+                Text("Go to Preferences")
+            }
+            Button(onClick = {navController.navigate("userProfile")})
+            {
+                Text("Go to User Profile")
+            }
+            Button(onClick = {navController.navigate("visitationForm")})
+            {
+                Text("Go to Visitation Form")
+            }
+
+
             if(loading)
             {
                 Spacer(modifier = Modifier.height(24.dp))
