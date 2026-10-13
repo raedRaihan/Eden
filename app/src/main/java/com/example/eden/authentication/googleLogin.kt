@@ -43,6 +43,28 @@ class googleLogin(val activity: Activity, val launchAuth: (IntentSenderRequest) 
 
     }
 
+    fun signOut(onSucc: () -> Unit, onError: (String) -> Unit)
+    {
+        Backendless.UserService.logout(
+
+            object: AsyncCallback<Void>
+            {
+                override fun handleResponse(response: Void?)
+                {
+                    Log.d("Backendless","Logged out successfully")
+                    activity.runOnUiThread { onSucc() }
+                }
+
+                override fun handleFault(fault: BackendlessFault?)
+                {
+                    Log.e("Backendless", "Logout failure "+ fault?.message)
+
+                    activity.runOnUiThread { onError(fault?.message ?: "Logout fail") }
+                }
+            }
+        )
+    }
+
     fun authorizeIntent(intent: Intent)
     {
         try

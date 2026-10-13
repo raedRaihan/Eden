@@ -6,11 +6,15 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -39,8 +43,8 @@ import com.example.eden.Screens.VisitationForm
 import com.example.eden.authentication.googleLogin
 
 class MainActivity : ComponentActivity() {
-    /*
-    var displayName by mutableStateOf<String?>(null)
+
+    var loggedInEmail by mutableStateOf<String?>(null)
     var loading by mutableStateOf(false)
     var errorMessage by mutableStateOf<String?>(null)
 
@@ -50,9 +54,14 @@ class MainActivity : ComponentActivity() {
     {
         result -> if(result.data !=null && result.resultCode == Activity.RESULT_OK)
         {
-            loginManager.authorization(result.data!!)
+            loginManager.authorizeIntent(result.data!!)
         }
-    }*/
+        else
+        {
+            loading= false
+            errorMessage = "Google sign in has been canceled"
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,10 +71,23 @@ class MainActivity : ComponentActivity() {
             APP_ID,
             API_KEY
         )
-        //val authorizationLauncher = registerForActivityResult()
+
+        loginManager = googleLogin(activity = this,
+            launchAuth = { request: IntentSenderRequest -> authorizationLauncher.launch(request)},
+            onLoginSuc = { user -> loggedInEmail = user.getProperty("email")?.toString() ?: "Unknown User"
+                loading= false
+                errorMessage = null
+                         },
+            onLoginErr= {error ->
+                loading = false
+                errorMessage =error
+            }
+        )
+
         enableEdgeToEdge()
         // This is where the UI hierarchy starts
         setContent {
+
             // navigation
             val navController = rememberNavController()
             NavHost(navController = navController, startDestination = "login")
@@ -73,13 +95,28 @@ class MainActivity : ComponentActivity() {
                 composable("login")
                 {
                     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->  Box(modifier = Modifier.padding(innerPadding))
-                        val loginPage = Login()
-                        loginPage.loginScreen({
-                            Log.d(
-                                "Login",
-                                "Google Sign in clicked"
-                            )
-                        }, navController= navController)
+                        if(loggedInEmail != null)
+                        {
+                            Column()
+                            {
+                                Text("Welcome, $loggedInEmail!")
+                            }
+
+                        }
+                        else
+                        {
+                            val loginPage = Login()
+                            loginPage.loginScreen(
+                                onGoggleSignIn = {
+                                    loading = true
+                                    errorMessage = null
+                                    loginManager.signIn()
+                                },
+                                loading = loading,
+                                error = errorMessage,
+                                navController= navController)
+                        }
+
                     }
                 }
                 composable("search")
