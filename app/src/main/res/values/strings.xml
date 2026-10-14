@@ -1,6 +1,9 @@
 <resources>
     <string name="app_name">Eden</string>
     <string name="dashboard_heading">Pets for adoption</string>
-    <string name="dashboard_sample_name">Maple</string>
-    <string name="dashboard_sample_description">Dog · Golden Retriever · 2 years</string>
+    <string-array name="sample_pets">
+        <item>Maple\nDog · Golden Retriever · 2 years</item>
+        <item>Oliver\nCat · Domestic Shorthair · 3 years</item>
+        <item>Clover\nRabbit · Holland Lop · 18 months</item>
+    </string-array>
 </resources>

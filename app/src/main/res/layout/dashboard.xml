@@ -3,32 +3,24 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#FFFBEA"
-    android:padding="16dp">
+    android:background="#FFFBEA">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:background="#FFE89A"
         android:gravity="center_vertical"
-        android:paddingHorizontal="16dp"
         android:text="@string/dashboard_heading"
         android:textColor="#393224"
         android:textSize="24sp" />
 
-    <TextView
+    <ListView
+        android:id="@+id/petList"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="@string/dashboard_sample_name"
-        android:textColor="#393224"
-        android:textSize="20sp" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="@string/dashboard_sample_description"
-        android:textColor="#393224"
-        android:textSize="16sp" />
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="24dp"
+        android:paddingBottom="16dp"
+        android:clipToPadding="false" />
 </LinearLayout>
