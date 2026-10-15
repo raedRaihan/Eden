@@ -52,14 +52,18 @@ import com.example.eden.users.Users
 import com.example.eden.users.UsersController
 
 class MainActivity : ComponentActivity() {
+    companion object
+    {
+        var loggedInEmail by mutableStateOf<String?>(null)
+        var loggedInName by mutableStateOf<String?>(null)
+        var loading by mutableStateOf(false)
+        var errorMessage by mutableStateOf<String?>(null)
+
+        lateinit var loginManager: googleLogin
+        lateinit var userController: UsersController
+    }
 
 
-    var loggedInEmail by mutableStateOf<String?>(null)
-    var loggedInName by mutableStateOf<String?>(null)
-    var loading by mutableStateOf(false)
-    var errorMessage by mutableStateOf<String?>(null)
-    lateinit var loginManager: googleLogin
-    lateinit var userController: UsersController
 
     val authorizationLauncher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult())
     {
@@ -134,6 +138,7 @@ class MainActivity : ComponentActivity() {
                                         loginManager.signOut(
                                             onSucc = {
                                                 loggedInEmail = null
+                                                loggedInName = null
                                                 loading = false
                                                 errorMessage = null
 

@@ -13,25 +13,26 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.eden.MainActivity
 import com.example.eden.authentication.googleLogin
 
 
-var loading by mutableStateOf(false)
-var errorMessage by mutableStateOf<String?>(null)
 
 @Composable
-fun LogOutButton(navController: NavController, loginManager: googleLogin)
+fun LogOutButton(navController: NavController)
 {
         Button(
-            enabled = !loading,
+            
             onClick = {
-                loading= true
-                errorMessage = null
+                MainActivity.loading = true
+                MainActivity.errorMessage = null
 
-                loginManager.signOut(
+                MainActivity.loginManager.signOut(
                     onSucc = {
-                        loading = false
-                        errorMessage = null
+                        MainActivity.loggedInEmail=null
+                        MainActivity.loggedInName = null
+                        MainActivity.loading = false
+                        MainActivity.errorMessage = null
 
                         navController.navigate("login"){
                             popUpTo(navController.graph.id) { inclusive = false }
@@ -40,8 +41,8 @@ fun LogOutButton(navController: NavController, loginManager: googleLogin)
                         }
                     },
                     onError = {
-                            error -> loading = false
-                        errorMessage = error
+                            error -> MainActivity.loading = false
+                        MainActivity.errorMessage = error
                     }
                 )
             }
@@ -51,18 +52,18 @@ fun LogOutButton(navController: NavController, loginManager: googleLogin)
             Text("Logout")
         }
 
-        if(loading)
+        if(MainActivity.loading)
         {
             CircularProgressIndicator()
         }
-        if(errorMessage != null)
+        if(MainActivity.errorMessage != null)
         {
-            Text(text=errorMessage + "", color= androidx.compose.ui.graphics.Color.Red)
+            Text(text=MainActivity.errorMessage + "", color= androidx.compose.ui.graphics.Color.Red)
         }
 }
 
 @Composable
-fun TopBar(navController: NavController, loginManager: googleLogin)
+fun TopBar(navController: NavController)
 {
-    LogOutButton(navController, loginManager)
+    LogOutButton(navController)
 }
