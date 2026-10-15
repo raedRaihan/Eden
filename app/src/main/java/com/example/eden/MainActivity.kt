@@ -1,6 +1,7 @@
 package com.example.eden
 
 import android.app.Activity
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -10,14 +11,19 @@ import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -41,14 +47,19 @@ import com.example.eden.Screens.Search
 import com.example.eden.Screens.UserProfile
 import com.example.eden.Screens.VisitationForm
 import com.example.eden.authentication.googleLogin
+import com.example.eden.users.Adopter
+import com.example.eden.users.Users
+import com.example.eden.users.UsersController
 
 class MainActivity : ComponentActivity() {
 
+
     var loggedInEmail by mutableStateOf<String?>(null)
+    var loggedInName by mutableStateOf<String?>(null)
     var loading by mutableStateOf(false)
     var errorMessage by mutableStateOf<String?>(null)
-
     lateinit var loginManager: googleLogin
+    lateinit var userController: UsersController
 
     val authorizationLauncher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult())
     {
@@ -74,7 +85,9 @@ class MainActivity : ComponentActivity() {
 
         loginManager = googleLogin(activity = this,
             launchAuth = { request: IntentSenderRequest -> authorizationLauncher.launch(request)},
-            onLoginSuc = { user -> loggedInEmail = user.getProperty("email")?.toString() ?: "Unknown User"
+            onLoginSuc = { user -> loggedInEmail = user.getProperty("email")?.toString() ?: "Unknown Email"
+
+                loggedInName = user.getProperty("name")?.toString() ?: "Unknown User"
                 loading= false
                 errorMessage = null
                          },
@@ -83,6 +96,7 @@ class MainActivity : ComponentActivity() {
                 errorMessage =error
             }
         )
+        userController = UsersController()
 
         enableEdgeToEdge()
         // This is where the UI hierarchy starts
@@ -97,24 +111,78 @@ class MainActivity : ComponentActivity() {
                     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->  Box(modifier = Modifier.padding(innerPadding))
                         if(loggedInEmail != null)
                         {
+
+                            if(!userController.searchForUser(loggedInEmail))
+                            {
+                                userController.addUser(Adopter(loggedInEmail, loggedInName))
+                            }
+                            else
+                            {
+                                Log.d("Backendless", "User was already in system, so we did not add them")
+                            }
+
                             Column()
                             {
                                 Text("Welcome, $loggedInEmail!")
+                                Spacer(modifier = Modifier.height(24.dp))
+                                Button(
+                                    enabled = !loading,
+                                    onClick = {
+                                        loading= true
+                                        errorMessage = null
+
+                                        loginManager.signOut(
+                                            onSucc = {
+                                                loggedInEmail = null
+                                                loading = false
+                                                errorMessage = null
+
+                                                navController.navigate("login"){
+                                                    popUpTo(navController.graph.id) { inclusive = false }
+
+                                                    launchSingleTop = true
+                                                }
+                                            },
+                                            onError = {
+                                                error -> loading = false
+                                                errorMessage = error
+                                            }
+                                        )
+                                    }
+
+                                )
+                                {
+                                    Text("Logout")
+                                }
+
+                                if(loading)
+                                {
+                                    CircularProgressIndicator()
+                                }
+                                if(errorMessage != null)
+                                {
+                                    Text(text=errorMessage + "", color= androidx.compose.ui.graphics.Color.Red)
+                                }
+
                             }
 
                         }
                         else
                         {
-                            val loginPage = Login()
-                            loginPage.loginScreen(
-                                onGoggleSignIn = {
-                                    loading = true
-                                    errorMessage = null
-                                    loginManager.signIn()
-                                },
-                                loading = loading,
-                                error = errorMessage,
-                                navController= navController)
+                            Box(modifier = Modifier.padding(innerPadding))
+                            {
+                                val loginPage = Login()
+                                loginPage.loginScreen(
+                                    onGoggleSignIn = {
+                                        loading = true
+                                        errorMessage = null
+                                        loginManager.signIn()
+                                    },
+                                    loading = loading,
+                                    error = errorMessage,
+                                    navController= navController)
+                            }
+
                         }
 
                     }
