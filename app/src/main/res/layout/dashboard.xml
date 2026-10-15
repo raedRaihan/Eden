@@ -14,6 +14,13 @@
         android:textColor="#393224"
         android:textSize="24sp"/>
 
+    <Spinner
+        android:id="@+id/speciesFilter"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:entries="@array/pet_species"
+        android:contentDescription="@string/species_filter" />
+
     <ListView
         android:id="@+id/petList"
         android:layout_width="match_parent"
