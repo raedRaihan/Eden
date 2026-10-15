@@ -9,10 +9,10 @@
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:background="#FFE89A"
-        android:gravity="center_vertical"
+        android:gravity="center"
         android:text="@string/dashboard_heading"
         android:textColor="#393224"
-        android:textSize="24sp" />
+        android:textSize="24sp"/>
 
     <ListView
         android:id="@+id/petList"
