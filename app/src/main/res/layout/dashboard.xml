@@ -3,15 +3,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#FFFBEA">
+    android:background="?android:attr/colorBackground">
 
     <TextView
+        android:id="@+id/dashboardHeading"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:background="#FFE89A"
         android:gravity="center"
         android:text="@string/dashboard_heading"
-        android:textColor="#393224"
         android:textSize="24sp"/>
 
     <Spinner
