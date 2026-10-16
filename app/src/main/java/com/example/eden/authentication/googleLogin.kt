@@ -116,7 +116,14 @@ class googleLogin(val activity: Activity, val launchAuth: (IntentSenderRequest) 
 
                 override fun handleFault(fault: BackendlessFault?)
                 {
-                    activity.runOnUiThread { onLoginErr("Failure to login") }
+                    val code = fault?.code ?: "Unknown error code"
+                    val message= fault?.message ?: "Unknown message"
+
+                    Log.e(
+                        "BackendlessAuth",
+                        "Login failed,  Error Code: $code, Error Message: $message"
+                    )
+                    activity.runOnUiThread { onLoginErr("Error "+ code+" "+message) }
                 }
             }, true
         )
