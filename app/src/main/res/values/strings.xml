@@ -8,5 +8,9 @@
         <item>Cat</item>
         <item>Rabbit</item>
     </string-array>
-    <string name="pets_load_error">Could not load pets. Check your connection and reopen Home.</string>
+    <string name="pets_load_error">Could not load pets. Check your connection and tap Refresh.</string>
+    <string name="refresh_pets">Refresh</string>
+    <string name="pets_loading">Loading pets…</string>
+    <string name="pets_empty">No pets are available for adoption right now.</string>
+    <string name="pets_no_matches">No pets match this species. Try All pets.</string>
 </resources>

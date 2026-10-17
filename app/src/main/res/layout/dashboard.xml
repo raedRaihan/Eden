@@ -20,6 +20,32 @@
         android:entries="@array/pet_species"
         android:contentDescription="@string/species_filter" />
 
+    <Button
+        android:id="@+id/refreshPets"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_marginHorizontal="16dp"
+        android:minHeight="48dp"
+        android:text="@string/refresh_pets"
+        android:textAllCaps="false" />
+
+    <ProgressBar
+        android:id="@+id/petsLoading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/petsMessage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:gravity="center"
+        android:accessibilityLiveRegion="polite"
+        android:visibility="gone" />
+
     <ListView
         android:id="@+id/petList"
         android:layout_width="match_parent"
