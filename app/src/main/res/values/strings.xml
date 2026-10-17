@@ -8,4 +8,5 @@
         <item>Cat</item>
         <item>Rabbit</item>
     </string-array>
+    <string name="pets_load_error">Could not load pets. Check your connection and reopen Home.</string>
 </resources>

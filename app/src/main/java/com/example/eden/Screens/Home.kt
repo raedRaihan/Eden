@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import android.content.res.ColorStateList
 import android.widget.AdapterView
 import android.widget.Spinner
@@ -34,11 +35,8 @@ fun Home(navController: NavController) {
             val list = root.findViewById<ListView>(R.id.petList)
             val filter = root.findViewById<Spinner>(R.id.speciesFilter)
             filter.backgroundTintList = ColorStateList.valueOf(colors.primary.toArgb())
-            val pets = listOf(
-                Pet("Maple", "Dog", "Golden Retriever · 2 years"),
-                Pet("Oliver", "Cat", "Domestic Shorthair · 3 years"),
-                Pet("Clover", "Rabbit", "Holland Lop · 18 months")
-            )
+            var pets = emptyList<Pet>()
+            root.tag = true
 
             fun showPets(selectedSpecies: String) {
                 val visiblePets = pets.filter { pet ->
@@ -64,7 +62,25 @@ fun Home(navController: NavController) {
                 override fun onNothingSelected(parent: AdapterView<*>?) {}
             }
             showPets("All pets")
+            PetController().loadPets(
+                onSuccess = { loadedPets ->
+                    root.post {
+                        if (root.tag == true) {
+                            pets = loadedPets
+                            showPets(filter.selectedItem.toString())
+                        }
+                    }
+                },
+                onError = {
+                    root.post {
+                        if (root.tag == true) {
+                            Toast.makeText(context, R.string.pets_load_error, Toast.LENGTH_LONG).show()
+                        }
+                    }
+                }
+            )
             root
-        }
+        },
+        onRelease = { it.tag = false }
     )
 }
