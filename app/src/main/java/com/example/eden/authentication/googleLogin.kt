@@ -8,6 +8,8 @@ import com.backendless.Backendless
 import com.backendless.BackendlessUser
 import com.backendless.async.callback.AsyncCallback
 import com.backendless.exceptions.BackendlessFault
+import com.example.eden.MainActivity
+import com.example.eden.users.Adopter
 import com.google.android.gms.auth.api.identity.AuthorizationRequest
 import com.google.android.gms.auth.api.identity.AuthorizationResult
 import com.google.android.gms.auth.api.identity.Identity
@@ -106,7 +108,19 @@ class googleLogin(val activity: Activity, val launchAuth: (IntentSenderRequest) 
                     if(response != null)
                     {
                         Log.d("Backendless","Successful backendless login")
-                        activity.runOnUiThread { onLoginSuc(response) }
+
+                        activity.runOnUiThread { onLoginSuc(response)
+                            val email = response.getProperty("email")?.toString()
+                            val name = response.getProperty("name")?.toString()
+                            if(!MainActivity.userController.searchForUser(email))
+                            {
+                                MainActivity.userController.addUser(Adopter(email, name))
+                            }
+                            else
+                            {
+                                Log.d("Backendless", "User was already in system, so we did not add them")
+                            }
+                        }
                     }
                     else
                     {

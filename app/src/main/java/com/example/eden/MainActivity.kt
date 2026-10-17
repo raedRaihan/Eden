@@ -19,6 +19,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -112,69 +113,23 @@ class MainActivity : ComponentActivity() {
             {
                 composable("login")
                 {
-                    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->  Box(modifier = Modifier.padding(innerPadding))
-                        if(loggedInEmail != null)
-                        {
-
-                            if(!userController.searchForUser(loggedInEmail))
+                        // LaunchEffect is used to safely suspend functions
+                        LaunchedEffect(loggedInEmail){
+                            if(loggedInEmail != null)
                             {
-                                userController.addUser(Adopter(loggedInEmail, loggedInName))
-                            }
-                            else
-                            {
-                                Log.d("Backendless", "User was already in system, so we did not add them")
-                            }
-
-                            Column()
-                            {
-                                Text("Welcome, $loggedInEmail!")
-                                Spacer(modifier = Modifier.height(24.dp))
-                                Button(
-                                    enabled = !loading,
-                                    onClick = {
-                                        loading= true
-                                        errorMessage = null
-
-                                        loginManager.signOut(
-                                            onSucc = {
-                                                loggedInEmail = null
-                                                loggedInName = null
-                                                loading = false
-                                                errorMessage = null
-
-                                                navController.navigate("login"){
-                                                    popUpTo(navController.graph.id) { inclusive = false }
-
-                                                    launchSingleTop = true
-                                                }
-                                            },
-                                            onError = {
-                                                error -> loading = false
-                                                errorMessage = error
-                                            }
-                                        )
+                                navController.navigate("home"){
+                                    popUpTo("login"){
+                                        inclusive = true
                                     }
 
-                                )
-                                {
-                                    Text("Logout")
-                                }
-
-                                if(loading)
-                                {
-                                    CircularProgressIndicator()
-                                }
-                                if(errorMessage != null)
-                                {
-                                    Text(text=errorMessage + "", color= androidx.compose.ui.graphics.Color.Red)
+                                    launchSingleTop = true
                                 }
 
                             }
-
                         }
-                        else
-                        {
-                            Box(modifier = Modifier.padding(innerPadding))
+                        Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->  Box(modifier = Modifier.padding(innerPadding)){
+
+                            if(loggedInEmail == null)
                             {
                                 val loginPage = Login()
                                 loginPage.loginScreen(
@@ -187,8 +142,15 @@ class MainActivity : ComponentActivity() {
                                     error = errorMessage,
                                     navController= navController)
                             }
+                            else
+                            {
+                                CircularProgressIndicator()
+                            }
+
 
                         }
+
+
 
                     }
                 }
