@@ -34,7 +34,7 @@ class Login
         )
         {
             Text(
-                text="Welcome",
+                text="Eden",
                 style = MaterialTheme.typography.headlineMedium
             )
 
@@ -48,7 +48,11 @@ class Login
                 text="Will delete these buttons below later",
                 style = MaterialTheme.typography.headlineMedium
             )
-            // will delete all these buttons later
+
+            Button(onClick = {navController.navigate("search")})
+            {
+                Text("Go to Search")
+            }
             Button(onClick = {navController.navigate("accountSettings")})
             {
                 Text("Go to Account Settings")

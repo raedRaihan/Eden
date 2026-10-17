@@ -14,7 +14,6 @@ import com.example.eden.uiElements.TopBar
 fun Search(navController: NavController)
 {
 
-    TopBar(navController)
     Column(Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
