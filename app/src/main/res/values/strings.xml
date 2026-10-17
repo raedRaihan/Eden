@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">Eden</string>
+    <string name="dashboard_heading">Pets for adoption</string>
+    <string name="species_filter">Filter pets by species</string>
+    <string-array name="pet_species">
+        <item>All pets</item>
+        <item>Dog</item>
+        <item>Cat</item>
+        <item>Rabbit</item>
+    </string-array>
 </resources>
