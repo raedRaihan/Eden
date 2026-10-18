@@ -133,14 +133,16 @@ class MainActivity : ComponentActivity() {
                             {
                                 val loginPage = Login()
                                 loginPage.loginScreen(
-                                    onGoggleSignIn = {
-                                        loading = true
-                                        errorMessage = null
-                                        loginManager.signIn()
-                                    },
-                                    loading = loading,
-                                    error = errorMessage,
-                                    navController= navController)
+                                    onSubmit = { _, _ ->
+                                        // TODO: Replace this temporary bypass with real user authentication.
+                                        navController.navigate("home") {
+                                            popUpTo("login") {
+                                                inclusive = true
+                                            }
+                                            launchSingleTop = true
+                                        }
+                                    }
+                                )
                             }
                             else
                             {
