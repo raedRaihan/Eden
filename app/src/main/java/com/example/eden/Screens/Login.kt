@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -29,6 +30,8 @@ class Login {
     @Composable
     fun loginScreen(
         message: String?,
+        loading: Boolean,
+        error: String?,
         onSubmit: (email: String, password: String) -> Unit,
         onSignUp: () -> Unit
     ) {
@@ -52,6 +55,11 @@ class Login {
                 Text(message, color = Color(0xFF2E7D32))
             }
 
+            if (error != null) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(error, color = Color.Red)
+            }
+
             Spacer(modifier = Modifier.height(24.dp))
 
             OutlinedTextField(
@@ -59,6 +67,7 @@ class Login {
                 onValueChange = { email = it },
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text("Email") },
+                enabled = !loading,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
             )
@@ -70,6 +79,7 @@ class Login {
                 onValueChange = { password = it },
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text("Password") },
+                enabled = !loading,
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
@@ -78,15 +88,21 @@ class Login {
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
-                onClick = { onSubmit(email, password) },
-                modifier = Modifier.fillMaxWidth()
+                onClick = { onSubmit(email.trim(), password) },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !loading && email.isNotBlank() && password.isNotBlank()
             ) {
-                Text("Submit")
+                if (loading) {
+                    CircularProgressIndicator()
+                } else {
+                    Text("Submit")
+                }
             }
 
             OutlinedButton(
                 onClick = onSignUp,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !loading
             ) {
                 Text("Sign up")
             }

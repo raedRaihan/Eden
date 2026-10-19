@@ -56,6 +56,30 @@ class UsersController
     }
 
 
+    fun login(
+        email: String,
+        password: String,
+        onSuccess: (BackendlessUser) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        Backendless.UserService.login(
+            email,
+            password,
+            object : AsyncCallback<BackendlessUser> {
+                override fun handleResponse(response: BackendlessUser) {
+                    Log.d("Backendless", "Logged in: $email")
+                    onSuccess(response)
+                }
+
+                override fun handleFault(fault: BackendlessFault) {
+                    Log.e("Backendless", "Login failed: ${fault.message}")
+                    onError(fault.message ?: "Could not log in.")
+                }
+            },
+            true
+        )
+    }
+
     fun registerAdopter(
         first: String,
         last: String,

@@ -30,6 +30,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.backendless.Backendless
+import com.backendless.BackendlessUser
 import com.example.eden.Screens.AccountSettings
 import com.example.eden.Screens.AdoptionApproval
 import com.example.eden.Screens.Calendar
@@ -56,8 +57,12 @@ import com.example.eden.users.UsersController
 class MainActivity : ComponentActivity() {
     companion object
     {
+        var loggedInUser by mutableStateOf<BackendlessUser?>(null)
         var loggedInEmail by mutableStateOf<String?>(null)
         var loggedInName by mutableStateOf<String?>(null)
+        var loggedInFirst by mutableStateOf("")
+        var loggedInLast by mutableStateOf("")
+        var loggedInAccountType by mutableStateOf("")
         var loading by mutableStateOf(false)
         var errorMessage by mutableStateOf<String?>(null)
         var registrationMessage by mutableStateOf<String?>(null)
@@ -138,13 +143,36 @@ class MainActivity : ComponentActivity() {
                                 val loginPage = Login()
                                 loginPage.loginScreen(
                                     message = registrationMessage,
-                                    onSubmit = { _, _ ->
-                                        navController.navigate("home") {
-                                            popUpTo("login") {
-                                                inclusive = true
+                                    loading = loading,
+                                    error = errorMessage,
+                                    onSubmit = { email, password ->
+                                        loading = true
+                                        errorMessage = null
+                                        registrationMessage = null
+                                        userController.login(
+                                            email = email,
+                                            password = password,
+                                            onSuccess = { user ->
+                                                runOnUiThread {
+                                                    loggedInUser = user
+                                                    loggedInEmail = user.getProperty("email")?.toString().orEmpty()
+                                                    loggedInFirst = user.getProperty("first")?.toString().orEmpty()
+                                                    loggedInLast = user.getProperty("last")?.toString().orEmpty()
+                                                    loggedInAccountType = user.getProperty("userType")?.toString()
+                                                        ?: "Adopter"
+                                                    loggedInName = listOf(loggedInFirst, loggedInLast)
+                                                        .filter { it.isNotBlank() }
+                                                        .joinToString(" ")
+                                                    loading = false
+                                                }
+                                            },
+                                            onError = { error ->
+                                                runOnUiThread {
+                                                    loading = false
+                                                    errorMessage = error
+                                                }
                                             }
-                                            launchSingleTop = true
-                                        }
+                                        )
                                     },
                                     onSignUp = {
                                         registrationMessage = null
@@ -241,7 +269,14 @@ class MainActivity : ComponentActivity() {
                 }
                 composable("userProfile")
                 {
-                    UserProfile(navController= navController)
+                    UserProfile(
+                        navController = navController,
+                        first = loggedInFirst,
+                        last = loggedInLast,
+                        email = loggedInEmail.orEmpty(),
+                        accountType = loggedInAccountType,
+                        backendlessUser = loggedInUser
+                    )
                 }
                 composable("visitationForm")
                 {
