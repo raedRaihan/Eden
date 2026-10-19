@@ -3,6 +3,7 @@ package com.example.eden.users
 import android.util.Log
 import com.backendless.async.callback.AsyncCallback
 import com.backendless.Backendless
+import com.backendless.BackendlessUser
 import com.backendless.exceptions.BackendlessFault
 
 class UsersController
@@ -55,6 +56,61 @@ class UsersController
     }
 
 
+    fun login(
+        email: String,
+        password: String,
+        onSuccess: (BackendlessUser) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        Backendless.UserService.login(
+            email,
+            password,
+            object : AsyncCallback<BackendlessUser> {
+                override fun handleResponse(response: BackendlessUser) {
+                    Log.d("Backendless", "Logged in: $email")
+                    onSuccess(response)
+                }
+
+                override fun handleFault(fault: BackendlessFault) {
+                    Log.e("Backendless", "Login failed: ${fault.message}")
+                    onError(fault.message ?: "Could not log in.")
+                }
+            },
+            true
+        )
+    }
+
+    fun registerAdopter(
+        first: String,
+        last: String,
+        email: String,
+        password: String,
+        onSuccess: (BackendlessUser) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val user = BackendlessUser().apply {
+            setProperty("first", first)
+            setProperty("last", last)
+            setProperty("email", email)
+            setProperty("userType", "Adopter")
+            setPassword(password)
+        }
+
+        Backendless.UserService.register(
+            user,
+            object : AsyncCallback<BackendlessUser> {
+                override fun handleResponse(response: BackendlessUser) {
+                    Log.d("Backendless", "Registered adopter: $email")
+                    onSuccess(response)
+                }
+
+                override fun handleFault(fault: BackendlessFault) {
+                    Log.e("Backendless", "Registration failed: ${fault.message}")
+                    onError(fault.message ?: "Could not create the account.")
+                }
+            }
+        )
+    }
 
     fun deleteUser(email: String)
     {

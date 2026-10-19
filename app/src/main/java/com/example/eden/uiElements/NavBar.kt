@@ -37,8 +37,12 @@ fun LogOutButton(navController: NavController)
 
             MainActivity.loginManager.signOut(
                 onSucc = {
-                    MainActivity.loggedInEmail=null
+                    MainActivity.loggedInUser = null
+                    MainActivity.loggedInEmail = null
                     MainActivity.loggedInName = null
+                    MainActivity.loggedInFirst = ""
+                    MainActivity.loggedInLast = ""
+                    MainActivity.loggedInAccountType = ""
                     MainActivity.loading = false
                     MainActivity.errorMessage = null
 
