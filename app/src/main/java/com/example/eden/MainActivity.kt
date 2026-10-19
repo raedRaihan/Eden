@@ -45,6 +45,7 @@ import com.example.eden.Screens.Notifications
 import com.example.eden.Screens.PetProfile
 import com.example.eden.Screens.Preferences
 import com.example.eden.Screens.Search
+import com.example.eden.Screens.SignUp
 import com.example.eden.Screens.UserProfile
 import com.example.eden.Screens.VisitationForm
 import com.example.eden.authentication.googleLogin
@@ -59,6 +60,9 @@ class MainActivity : ComponentActivity() {
         var loggedInName by mutableStateOf<String?>(null)
         var loading by mutableStateOf(false)
         var errorMessage by mutableStateOf<String?>(null)
+        var registrationMessage by mutableStateOf<String?>(null)
+        var registrationLoading by mutableStateOf(false)
+        var registrationError by mutableStateOf<String?>(null)
 
         lateinit var loginManager: googleLogin
         lateinit var userController: UsersController
@@ -133,14 +137,19 @@ class MainActivity : ComponentActivity() {
                             {
                                 val loginPage = Login()
                                 loginPage.loginScreen(
+                                    message = registrationMessage,
                                     onSubmit = { _, _ ->
-                                        // TODO: Replace this temporary bypass with real user authentication.
                                         navController.navigate("home") {
                                             popUpTo("login") {
                                                 inclusive = true
                                             }
                                             launchSingleTop = true
                                         }
+                                    },
+                                    onSignUp = {
+                                        registrationMessage = null
+                                        registrationError = null
+                                        navController.navigate("signUp")
                                     }
                                 )
                             }
@@ -155,6 +164,40 @@ class MainActivity : ComponentActivity() {
 
 
                     }
+                }
+                composable("signUp")
+                {
+                    SignUp(
+                        loading = registrationLoading,
+                        backendError = registrationError,
+                        onSubmit = { first, last, email, password ->
+                            registrationLoading = true
+                            registrationError = null
+                            userController.registerAdopter(
+                                first = first,
+                                last = last,
+                                email = email,
+                                password = password,
+                                onSuccess = {
+                                    runOnUiThread {
+                                        registrationLoading = false
+                                        registrationMessage = "Account created. You can now log in."
+                                        navController.popBackStack()
+                                    }
+                                },
+                                onError = { error ->
+                                    runOnUiThread {
+                                        registrationLoading = false
+                                        registrationError = error
+                                    }
+                                }
+                            )
+                        },
+                        onBackToLogin = {
+                            registrationError = null
+                            navController.popBackStack()
+                        }
+                    )
                 }
                 composable("search")
                 {

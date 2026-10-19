@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -26,9 +28,11 @@ import androidx.compose.ui.unit.dp
 class Login {
     @Composable
     fun loginScreen(
-        onSubmit: (username: String, password: String) -> Unit
+        message: String?,
+        onSubmit: (email: String, password: String) -> Unit,
+        onSignUp: () -> Unit
     ) {
-        var username by remember { mutableStateOf("") }
+        var email by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
 
         Column(
@@ -43,14 +47,20 @@ class Login {
                 style = MaterialTheme.typography.headlineMedium
             )
 
+            if (message != null) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(message, color = Color(0xFF2E7D32))
+            }
+
             Spacer(modifier = Modifier.height(24.dp))
 
             OutlinedTextField(
-                value = username,
-                onValueChange = { username = it },
+                value = email,
+                onValueChange = { email = it },
                 modifier = Modifier.fillMaxWidth(),
-                label = { Text("Username") },
-                singleLine = true
+                label = { Text("Email") },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -68,10 +78,17 @@ class Login {
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
-                onClick = { onSubmit(username, password) },
+                onClick = { onSubmit(email, password) },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Submit")
+            }
+
+            OutlinedButton(
+                onClick = onSignUp,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Sign up")
             }
         }
     }
