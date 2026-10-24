@@ -7,13 +7,6 @@
     >
 
 
-    <TextView
-        android:id="@+id/petProfileName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-
-        android:text="Pet Profile" />
-
     <Button
         android:id="@+id/adoptionButton"
         android:layout_width="238dp"

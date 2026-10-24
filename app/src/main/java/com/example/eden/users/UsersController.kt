@@ -72,7 +72,7 @@ class UsersController
                 }
 
                 override fun handleFault(fault: BackendlessFault) {
-                    Log.e("Backendless", "Login failed: ${fault.message}")
+                    Log.e("Backendless", "Login failed (${fault.code}): ${fault.message}")
                     onError(fault.message ?: "Could not log in.")
                 }
             },

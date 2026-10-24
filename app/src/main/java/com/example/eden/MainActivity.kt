@@ -59,6 +59,11 @@ import com.example.eden.users.UsersController
 class MainActivity : ComponentActivity() {
     companion object
     {
+        // Set to false to restore login during appointment development.
+        private const val SKIP_LOGIN_FOR_DEVELOPMENT = true
+        val skipLoginForDevelopment: Boolean
+            get() = BuildConfig.DEBUG && SKIP_LOGIN_FOR_DEVELOPMENT
+
         var loggedInUser by mutableStateOf<BackendlessUser?>(null)
         var loggedInEmail by mutableStateOf<String?>(null)
         var loggedInName by mutableStateOf<String?>(null)
@@ -117,16 +122,31 @@ class MainActivity : ComponentActivity() {
         )
         userController = UsersController()
 
+        if (skipLoginForDevelopment) {
+            chosenPetGlobal = hashMapOf("name" to "Sample pet (local preview)")
+        }
+
         enableEdgeToEdge()
         // This is where the UI hierarchy starts
         setContent {
 
             // navigation
             val navController = rememberNavController()
-            NavHost(navController = navController, startDestination = "login")
+            NavHost(
+                navController = navController,
+                startDestination = if (skipLoginForDevelopment) "petProfile" else "login"
+            )
             {
                 composable("login")
                 {
+                    if (skipLoginForDevelopment) {
+                        LaunchedEffect(Unit) {
+                            navController.navigate("petProfile") {
+                                popUpTo("login") { inclusive = true }
+                                launchSingleTop = true
+                            }
+                        }
+                    } else {
                         // LaunchEffect is used to safely suspend functions
                         LaunchedEffect(loggedInEmail){
                             if(loggedInEmail != null)
@@ -196,6 +216,7 @@ class MainActivity : ComponentActivity() {
 
 
 
+                    }
                     }
                 }
                 composable("signUp")

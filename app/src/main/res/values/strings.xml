@@ -13,4 +13,9 @@
     <string name="pets_loading">Loading pets…</string>
     <string name="pets_empty">No pets are available for adoption right now.</string>
     <string name="pets_no_matches">No pets match this species. Try All pets.</string>
+    <string name="visit_title">Request a visit</string>
+    <string name="visit_pet_title">Request a visit with %1$s</string>
+    <string name="visit_choose_date">Choose visit date</string>
+    <string name="visit_choose_time">Choose visit time</string>
+    <string name="visit_back">Back to pet profile</string>
 </resources>
