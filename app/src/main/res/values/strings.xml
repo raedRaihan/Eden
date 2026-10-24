@@ -18,4 +18,10 @@
     <string name="visit_choose_date">Choose visit date</string>
     <string name="visit_choose_time">Choose visit time</string>
     <string name="visit_back">Back to pet profile</string>
+    <string name="visit_date_required">Choose a visit date first.</string>
+    <string name="visit_time_required">Choose a visit time first.</string>
+    <string name="visit_future_required">Choose a date and time in the future.</string>
+    <string name="visit_review_title">Review request</string>
+    <string name="visit_review_summary">Pet: %1$s\nDate: %2$s\nTime: %3$s\n\nThis is a local preview. No appointment has been submitted.</string>
+    <string name="visit_edit_request">Back to form</string>
 </resources>

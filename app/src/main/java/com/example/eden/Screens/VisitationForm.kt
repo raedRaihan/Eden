@@ -1,9 +1,11 @@
 package com.example.eden.Screens
 
+import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
+import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import androidx.compose.foundation.layout.fillMaxSize
@@ -37,7 +39,11 @@ fun VisitationForm(navController: NavController, chosenPet: HashMap<*, *>) {
                 val dateButton = view.findViewById<Button>(R.id.visitDateButton)
                 val timeButton = view.findViewById<Button>(R.id.visitTimeButton)
                 val backButton = view.findViewById<Button>(R.id.visitBackButton)
+                val reviewButton = view.findViewById<Button>(R.id.visitReviewButton)
+                val errorMessage = view.findViewById<TextView>(R.id.visitErrorMessage)
                 val visitDateTime = Calendar.getInstance()
+                var dateSelected = false
+                var timeSelected = false
 
                 title.text = context.getString(R.string.visit_pet_title, chosenPet["name"]?.toString() ?: "Unknown")
 
@@ -46,6 +52,8 @@ fun VisitationForm(navController: NavController, chosenPet: HashMap<*, *>) {
                         themedContext,
                         { _, year, month, day ->
                             visitDateTime.set(year, month, day)
+                            dateSelected = true
+                            errorMessage.visibility = View.GONE
                             dateButton.text = android.text.format.DateFormat.getDateFormat(context)
                                 .format(visitDateTime.time)
                         },
@@ -63,6 +71,8 @@ fun VisitationForm(navController: NavController, chosenPet: HashMap<*, *>) {
                         { _, hour, minute ->
                             visitDateTime.set(Calendar.HOUR_OF_DAY, hour)
                             visitDateTime.set(Calendar.MINUTE, minute)
+                            timeSelected = true
+                            errorMessage.visibility = View.GONE
                             timeButton.text = android.text.format.DateFormat.getTimeFormat(context)
                                 .format(visitDateTime.time)
                         },
@@ -70,6 +80,37 @@ fun VisitationForm(navController: NavController, chosenPet: HashMap<*, *>) {
                         visitDateTime.get(Calendar.MINUTE),
                         android.text.format.DateFormat.is24HourFormat(context)
                     ).show()
+                }
+
+                reviewButton.setOnClickListener {
+                    visitDateTime.set(Calendar.SECOND, 0)
+                    visitDateTime.set(Calendar.MILLISECOND, 0)
+                    val error = visitValidationError(
+                        dateSelected,
+                        timeSelected,
+                        visitDateTime.timeInMillis,
+                        System.currentTimeMillis()
+                    )
+                    if (error != null) {
+                        errorMessage.setText(error)
+                        errorMessage.visibility = View.VISIBLE
+                    } else {
+                        errorMessage.visibility = View.GONE
+                        val date = android.text.format.DateFormat.getDateFormat(context)
+                            .format(visitDateTime.time)
+                        val time = android.text.format.DateFormat.getTimeFormat(context)
+                            .format(visitDateTime.time)
+                        AlertDialog.Builder(themedContext)
+                            .setTitle(R.string.visit_review_title)
+                            .setMessage(context.getString(
+                                R.string.visit_review_summary,
+                                chosenPet["name"]?.toString() ?: "Unknown",
+                                date,
+                                time
+                            ))
+                            .setPositiveButton(R.string.visit_edit_request, null)
+                            .show()
+                    }
                 }
 
                 backButton.setOnClickListener { navController.popBackStack() }
