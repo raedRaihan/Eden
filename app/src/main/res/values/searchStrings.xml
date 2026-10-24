@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+    <string-array name="species">
+        <item>None</item>
+        <item>Cat</item>
+        <item>Dog</item>
+        <item>Rabbit</item>
+    </string-array>
+
+
+    <string-array name="breedCat">
+        <item>None</item>
+        <item>Tabby</item>
+        <item>Domestic Longhair</item>
+        <item>Domestic Shorthair</item>
+        <item>Ragdoll</item>
+        <item>Persian</item>
+        <item>Maine Coon</item>
+    </string-array>
+
+    <string-array name="breedDog">
+        <item>None</item>
+        <item>Beagle</item>
+        <item>Domestic Shorthair</item>
+        <item>Labrador Mix</item>
+        <item>Domestic Longhair</item>
+        <item>Shepherd Mix</item>
+        <item>Golden Retriever</item>
+    </string-array>
+
+    <string-array name="breedRabbit">
+        <item>None</item>
+        <item>Holland Lop</item>
+        <item>Netherland Dwarf</item>
+        <item>Dutch</item>
+        <item>Mini Rex</item>
+        <item>Lionhead</item>
+        <item>Californian</item>
+    </string-array>
+
+    <string-array name="size">
+        <item>None</item>
+        <item>Large</item>
+        <item>Medium</item>
+        <item>Small</item>
+    </string-array>
+
+    <string-array name="gender">
+        <item>None</item>
+        <item>Female</item>
+        <item>Male</item>
+    </string-array>
+
+
+</resources>

@@ -33,6 +33,7 @@ import com.backendless.Backendless
 import com.backendless.BackendlessUser
 import com.example.eden.Screens.AccountSettings
 import com.example.eden.Screens.AdoptionApproval
+import com.example.eden.Screens.AdoptionForm
 import com.example.eden.Screens.Calendar
 import com.example.eden.Screens.CreateAnimalProfile
 import com.example.eden.Screens.CreateUserProfile
@@ -46,6 +47,7 @@ import com.example.eden.Screens.Notifications
 import com.example.eden.Screens.PetProfile
 import com.example.eden.Screens.Preferences
 import com.example.eden.Screens.Search
+import com.example.eden.Screens.SearchResults
 import com.example.eden.Screens.SignUp
 import com.example.eden.Screens.UserProfile
 import com.example.eden.Screens.VisitationForm
@@ -68,6 +70,9 @@ class MainActivity : ComponentActivity() {
         var registrationMessage by mutableStateOf<String?>(null)
         var registrationLoading by mutableStateOf(false)
         var registrationError by mutableStateOf<String?>(null)
+
+        var queryResultsGlobal:List<Map<*, *>> = emptyList()
+        var chosenPetGlobal: HashMap<*, *> = hashMapOf<Any?, Any?>()
 
         lateinit var loginManager: googleLogin
         lateinit var userController: UsersController
@@ -239,6 +244,10 @@ class MainActivity : ComponentActivity() {
                 {
                     AdoptionApproval(navController= navController)
                 }
+                composable("adoptionForm")
+                {
+                    AdoptionForm(navController= navController, chosenPetGlobal)
+                }
                 composable("calendar")
                 {
                     Calendar(navController= navController)
@@ -261,7 +270,7 @@ class MainActivity : ComponentActivity() {
                 }
                 composable("petProfile")
                 {
-                    PetProfile(navController= navController)
+                    PetProfile(navController= navController, chosenPetGlobal)
                 }
                 composable("preferences")
                 {
@@ -280,8 +289,13 @@ class MainActivity : ComponentActivity() {
                 }
                 composable("visitationForm")
                 {
-                    VisitationForm(navController= navController)
+                    VisitationForm(navController= navController, chosenPetGlobal)
                 }
+                composable("searchResults")
+                {
+                    SearchResults(navController= navController, queryResultsGlobal)
+                }
+
             }
 
 

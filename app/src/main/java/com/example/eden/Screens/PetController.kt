@@ -53,4 +53,105 @@ class PetController {
 
         loadPage(0)
     }
+    fun searchForPet(name: String, minAge: String, maxAge: String, species: String, breed: String, size: String,gender: String,
+    onSuccess:(List<Map<*, *>>) -> Unit, onError: (String) -> Unit)
+    {
+        var parameters = mutableListOf<String>()
+
+        val convertedMinAge = minAge.toIntOrNull()
+        val convertedMaxAge = maxAge.toIntOrNull()
+
+        if(name.length > 0)
+        {
+            parameters.add("name = '${name}'")
+        }
+        if(species != "None")
+        {
+            parameters.add("species = '${species}'")
+        }
+        if(species != "None" && breed != "None")
+        {
+            parameters.add("breed = '${breed}'")
+        }
+        if(size != "None")
+        {
+            parameters.add("size = '${size}'")
+        }
+        if(gender != "None")
+        {
+            parameters.add("gender = '${gender}'")
+        }
+
+        val searchQuery = DataQueryBuilder.create().setPageSize(100)
+
+        if(parameters.size > 0 || convertedMinAge != null || convertedMaxAge != null)
+        {
+
+            var inputedQuery = ""
+
+            for ((index, value) in parameters.withIndex())
+            {
+                if(index != parameters.size-1)
+                {
+                    inputedQuery += value+" AND "
+                }
+                else
+                {
+                    inputedQuery += value
+                }
+            }
+
+            if(inputedQuery.length > 0 && convertedMinAge !=null)
+            {
+                inputedQuery+= " AND ageMonths >= "+ "'${minAge}'"
+            }
+            else if(convertedMinAge !=null)
+            {
+                inputedQuery+= "ageMonths >= "+ "'${minAge}'"
+            }
+
+            if(inputedQuery.length > 0 && convertedMaxAge !=null)
+            {
+                inputedQuery+= " AND ageMonths <= " + "'${maxAge}'"
+
+            }
+            else if(convertedMaxAge !=null)
+            {
+                inputedQuery+= "ageMonths <= "+ "'${maxAge}'"
+            }
+            Log.d("PetController", "Inputed query is "+inputedQuery)
+            searchQuery.setWhereClause(inputedQuery)
+        }
+
+        Backendless.Data.of("Animals").find(searchQuery,
+            object : AsyncCallback<List<Map<*, *>>> {
+                override fun handleResponse(response: List<Map<*, *>>) {
+
+                    if(response.isEmpty())
+                    {
+                        Log.d("PetController", "No pets found")
+                    }
+                    onSuccess(response)
+
+                    for(animal in response)
+                    {
+                        //Log.d("PetController", "Name: "+ animal["name"] +" Age in Months: "+animal["ageMonths"]
+                        //        +" Species: "+animal["species"] + " Breed: "+animal["breed"]+" Size: "+animal["size"]+" Gender: "+animal["gender"])
+                    }
+
+
+
+                }
+
+                override fun handleFault(fault: BackendlessFault) {
+                    Log.e("PetController", "Could not load pets: ${fault.message}")
+                }
+            }
+        )
+
+
+
+
+    }
+
 }
