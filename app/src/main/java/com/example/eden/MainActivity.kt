@@ -59,8 +59,8 @@ import com.example.eden.users.UsersController
 class MainActivity : ComponentActivity() {
     companion object
     {
-        // Set to false to restore login during appointment development.
-        private const val SKIP_LOGIN_FOR_DEVELOPMENT = true
+        // Keep false when testing authenticated appointment submissions.
+        private const val SKIP_LOGIN_FOR_DEVELOPMENT = false
         val skipLoginForDevelopment: Boolean
             get() = BuildConfig.DEBUG && SKIP_LOGIN_FOR_DEVELOPMENT
 

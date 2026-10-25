@@ -7,6 +7,7 @@ import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -15,10 +16,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
+import com.example.eden.MainActivity
 import com.example.eden.R
 import com.example.eden.uiElements.BottomBar
 import com.example.eden.uiElements.TopBar
 import java.util.Calendar
+import java.util.UUID
 
 @Composable
 fun VisitationForm(navController: NavController, chosenPet: HashMap<*, *>) {
@@ -40,10 +43,15 @@ fun VisitationForm(navController: NavController, chosenPet: HashMap<*, *>) {
                 val timeButton = view.findViewById<Button>(R.id.visitTimeButton)
                 val backButton = view.findViewById<Button>(R.id.visitBackButton)
                 val reviewButton = view.findViewById<Button>(R.id.visitReviewButton)
+                val notesEditText = view.findViewById<EditText>(R.id.visitNotesInput)
                 val errorMessage = view.findViewById<TextView>(R.id.visitErrorMessage)
                 val visitDateTime = Calendar.getInstance()
                 var dateSelected = false
                 var timeSelected = false
+                var submitting = false
+                var submitted = false
+                val requestId = UUID.randomUUID().toString()
+                view.tag = true
 
                 title.text = context.getString(R.string.visit_pet_title, chosenPet["name"]?.toString() ?: "Unknown")
 
@@ -83,8 +91,10 @@ fun VisitationForm(navController: NavController, chosenPet: HashMap<*, *>) {
                 }
 
                 reviewButton.setOnClickListener {
+                    if (submitting || submitted) return@setOnClickListener
                     visitDateTime.set(Calendar.SECOND, 0)
                     visitDateTime.set(Calendar.MILLISECOND, 0)
+                    val userNotes = notesEditText.text.toString().trim()
                     val error = visitValidationError(
                         dateSelected,
                         timeSelected,
@@ -100,21 +110,89 @@ fun VisitationForm(navController: NavController, chosenPet: HashMap<*, *>) {
                             .format(visitDateTime.time)
                         val time = android.text.format.DateFormat.getTimeFormat(context)
                             .format(visitDateTime.time)
-                        AlertDialog.Builder(themedContext)
+                        val petId = chosenPet["objectId"]?.toString()
+                        val userId = MainActivity.loggedInUser?.objectId
+                        val submissionError = visitSubmissionError(MainActivity.skipLoginForDevelopment, petId, userId)
+                        val notesPreview = if (userNotes.isNotEmpty()) userNotes else "No Notes"
+                        val summary = context.getString(
+                            R.string.visit_review_summary,
+                            chosenPet["name"]?.toString() ?: "Unknown", date, time, notesPreview
+                        ) + if (submissionError != null) "\n\n${context.getString(submissionError)}" else ""
+                        val dialog = AlertDialog.Builder(themedContext)
                             .setTitle(R.string.visit_review_title)
-                            .setMessage(context.getString(
-                                R.string.visit_review_summary,
-                                chosenPet["name"]?.toString() ?: "Unknown",
-                                date,
-                                time
-                            ))
-                            .setPositiveButton(R.string.visit_edit_request, null)
-                            .show()
+                            .setMessage(summary)
+                            .setPositiveButton(R.string.visit_submit, null)
+                            .setNegativeButton(R.string.visit_edit_request, null)
+                            .create()
+                        view.setTag(R.id.visitReviewButton, dialog)
+                        dialog.setOnShowListener {
+                            val submitButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                            submitButton.isEnabled = submissionError == null
+                            submitButton.setOnClickListener submitClick@{
+                                if (submitting || submitted) return@submitClick
+                                val currentError = visitSubmissionError(
+                                    MainActivity.skipLoginForDevelopment,
+                                    petId,
+                                    MainActivity.loggedInUser?.objectId
+                                )
+                                if (currentError != null || userId != MainActivity.loggedInUser?.objectId) {
+                                    dialog.setMessage(context.getString(currentError ?: R.string.visit_login_required))
+                                    return@submitClick
+                                }
+                                submitting = true
+                                submitButton.isEnabled = false
+                                submitButton.setText(R.string.visit_submitting)
+                                dialog.getButton(AlertDialog.BUTTON_NEGATIVE).isEnabled = false
+                                dialog.setCancelable(false)
+                                dateButton.isEnabled = false
+                                timeButton.isEnabled = false
+                                reviewButton.isEnabled = false
+                                backButton.isEnabled = false
+                                notesEditText.isEnabled = false
+                                AppointmentController().submitVisit(
+                                    requestId, petId.orEmpty(), userId.orEmpty(), visitDateTime.timeInMillis, userNotes,
+                                    onSuccess = {
+                                        view.post {
+                                            if (view.tag == true) {
+                                                submitting = false
+                                                submitted = true
+                                                dialog.dismiss()
+                                                errorMessage.setText(R.string.visit_saved)
+                                                errorMessage.setTextColor(android.graphics.Color.rgb(46, 125, 50))
+                                                errorMessage.visibility = View.VISIBLE
+                                                backButton.isEnabled = true
+                                            }
+                                        }
+                                    },
+                                    onError = { message ->
+                                        view.post {
+                                            if (view.tag == true) {
+                                                submitting = false
+                                                submitButton.isEnabled = true
+                                                submitButton.setText(R.string.visit_submit)
+                                                dialog.getButton(AlertDialog.BUTTON_NEGATIVE).isEnabled = true
+                                                dialog.setCancelable(true)
+                                                dialog.setMessage("$summary\n\n$message")
+                                                dateButton.isEnabled = true
+                                                timeButton.isEnabled = true
+                                                reviewButton.isEnabled = true
+                                                backButton.isEnabled = true
+                                            }
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                        dialog.show()
                     }
                 }
 
                 backButton.setOnClickListener { navController.popBackStack() }
                 view
+            },
+            onRelease = {
+                it.tag = false
+                (it.getTag(R.id.visitReviewButton) as? AlertDialog)?.dismiss()
             }
         )
     }

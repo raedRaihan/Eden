@@ -13,3 +13,10 @@ internal fun visitValidationError(
     visitTimeMillis <= nowMillis -> R.string.visit_future_required
     else -> null
 }
+
+internal fun visitSubmissionError(previewMode: Boolean, petId: String?, userId: String?): Int? = when {
+    previewMode -> R.string.visit_preview_only
+    userId.isNullOrBlank() -> R.string.visit_login_required
+    petId.isNullOrBlank() -> R.string.visit_pet_required
+    else -> null
+}
