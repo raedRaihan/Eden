@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
+import com.bumptech.glide.Glide
 import com.example.eden.MainActivity.Companion.chosenPetGlobal
 import com.example.eden.R
 import com.example.eden.uiElements.BottomBar
@@ -53,6 +55,10 @@ fun PetProfile(navController: NavController,  chosenPet: HashMap<*, *>)
                     navController.navigate("visitationForm")
                 }
 
+                val imageView = view.findViewById<ImageView>(R.id.myImageView)
+                val imageUrl = "https://res.cloudinary.com/s4swftqd/image/upload/v1792979743/Beagle.webp"
+
+                Glide.with(newContext).load(imageUrl).into(imageView)
 
                 view
             }
