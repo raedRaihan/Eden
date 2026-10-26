@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
 import com.example.eden.R
+import com.example.eden.MainActivity.Companion.chosenPetGlobal
 import com.example.eden.uiElements.TopBar
 import com.example.eden.uiElements.BottomBar
 
@@ -69,6 +70,16 @@ fun Home(navController: NavController) {
                             row.setTextColor(colors.onBackground.toArgb())
                             return row
                         }
+                    }
+                    list.setOnItemClickListener { _, _, position, _ ->
+                        val pet = visiblePets[position]
+                        chosenPetGlobal = hashMapOf(
+                            "objectId" to pet.objectId,
+                            "name" to pet.name,
+                            "species" to pet.species,
+                            "description" to pet.description
+                        )
+                        navController.navigate("petProfile")
                     }
                 }
 

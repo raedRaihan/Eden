@@ -114,6 +114,7 @@ fun TopBar(navController: NavController)
 
                     NavigationBarItem(
                         selected = false,
+                        enabled = !MainActivity.skipLoginForDevelopment,
                         onClick = {
                             LogOutButton(navController)
                         },

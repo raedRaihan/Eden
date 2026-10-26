@@ -40,10 +40,6 @@ fun PetProfile(navController: NavController,  chosenPet: HashMap<*, *>)
                 val newContext = ContextThemeWrapper(context, com.google.android.material.R.style.Theme_MaterialComponents_DayNight_NoActionBar)
                 val view = LayoutInflater.from(newContext).inflate(R.layout.pet_profile, null, false)
 
-                var petName=view.findViewById<TextView>(R.id.petProfileName)
-
-                petName.text = (chosenPet["name"] ?: "Unknown") as CharSequence?
-
                 var adoptionButton=view.findViewById<Button>(R.id.adoptionButton)
                 var visitButton=view.findViewById<Button>(R.id.visitButton)
 
