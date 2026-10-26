@@ -5,6 +5,15 @@
     android:orientation="vertical"
     android:padding="24dp">
 
+    <ProgressBar
+        android:id="@+id/visitLoadingSpinner"
+        style="?android:attr/progressBarStyleSmall"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_gravity="center_horizontal"
+        android:contentDescription="@string/visit_checking"
+        android:visibility="gone" />
+
     <TextView
         android:id="@+id/errorOrLoadText"
         android:layout_width="match_parent"
@@ -98,7 +107,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:text="@string/visit_back"
-            android:textColor="#FF0000" />
+            android:textColor="@color/purple_500" />
     </LinearLayout>
 
     <LinearLayout
@@ -133,7 +142,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:background="#cc0000"
+            android:backgroundTint="#cc0000"
             android:text="@string/cancel_appointment"
             android:textColor="#ffffff" />
 
@@ -143,7 +152,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:text="@string/visit_back"
-            android:textColor="#FF0000" />
+            android:textColor="@color/purple_500" />
 
     </LinearLayout>
 

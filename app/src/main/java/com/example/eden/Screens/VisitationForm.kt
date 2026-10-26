@@ -1,5 +1,6 @@
 package com.example.eden.Screens
 
+import android.content.res.ColorStateList
 import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
@@ -10,9 +11,12 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.LinearLayout
+import android.widget.ProgressBar
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
@@ -26,6 +30,7 @@ import java.util.UUID
 
 @Composable
 fun VisitationForm(navController: NavController, chosenPet: HashMap<*, *>) {
+    val colors = MaterialTheme.colorScheme
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = { TopBar(navController) },
@@ -58,6 +63,8 @@ fun VisitationForm(navController: NavController, chosenPet: HashMap<*, *>) {
                 val lookupMessage = view.findViewById<TextView>(R.id.errorOrLoadText)
                 val backButton2 = view.findViewById<Button>(R.id.visitBackButton2)
                 val retryButton = view.findViewById<Button>(R.id.visitRetryButton)
+                val loadingSpinner = view.findViewById<ProgressBar>(R.id.visitLoadingSpinner)
+                loadingSpinner.indeterminateTintList = ColorStateList.valueOf(colors.primary.toArgb())
 
                 var existingAppointment: Appointment? = null
                 view.tag = true
@@ -65,15 +72,17 @@ fun VisitationForm(navController: NavController, chosenPet: HashMap<*, *>) {
                 fun checkAppointment() {
                     bookingContainer.visibility = View.GONE
                     existingContainer.visibility = View.GONE
-                    lookupMessage.visibility = View.VISIBLE
-                    lookupMessage.setText(R.string.visit_checking)
+                    lookupMessage.visibility = View.GONE
+                    loadingSpinner.visibility = View.VISIBLE
                     retryButton.visibility = View.GONE
 
                     val userId = MainActivity.loggedInUser?.objectId
                     val petId = chosenPet["objectId"]?.toString()
 
                     if (userId.isNullOrBlank() || petId.isNullOrBlank()) {
+                        loadingSpinner.visibility = View.GONE
                         lookupMessage.setText(R.string.visit_lookup_identity_required)
+                        lookupMessage.visibility = View.VISIBLE
                         return
                     }
 
@@ -84,6 +93,7 @@ fun VisitationForm(navController: NavController, chosenPet: HashMap<*, *>) {
                             view.post {
                                 if (view.tag == true) {
                                     existingAppointment = appointment
+                                    loadingSpinner.visibility = View.GONE
                                     lookupMessage.visibility = View.GONE
 
                                     if (appointment == null) {
@@ -120,6 +130,7 @@ fun VisitationForm(navController: NavController, chosenPet: HashMap<*, *>) {
                         onError = { message ->
                             view.post {
                                 if (view.tag == true) {
+                                    loadingSpinner.visibility = View.GONE
                                     lookupMessage.text = message
                                     lookupMessage.visibility = View.VISIBLE
                                     retryButton.visibility = View.VISIBLE
