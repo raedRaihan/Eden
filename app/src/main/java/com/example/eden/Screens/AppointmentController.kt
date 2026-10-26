@@ -1,14 +1,83 @@
 package com.example.eden.Screens
 
+import android.util.Log
 import com.backendless.Backendless
 import com.backendless.async.callback.AsyncCallback
 import com.backendless.exceptions.BackendlessFault
+import com.backendless.persistence.DataQueryBuilder
 import com.backendless.property.ObjectProperty
 import com.backendless.transaction.UnitOfWork
 import com.backendless.transaction.UnitOfWorkResult
 import java.util.Date
 
 class AppointmentController {
+
+    fun findVisitAppointment(
+        userId: String,
+        petId: String,
+        onSuccess: (Appointment?) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        if (petId.isBlank() || userId.isBlank()) {
+            onError("UserId not found!")
+            return
+        }
+
+
+            val query = DataQueryBuilder.create()
+                .setWhereClause("userId.objectId = '$userId' AND " +
+                        "animal.objectId = '$petId' AND " +
+                        "appointmentType = 'VISITATION' AND " +
+                        "(requestStatus = 'PENDING' OR requestStatus = 'CONFIRMED')")
+                .setSortBy("appointmentDate", "objectId")
+                .setPageSize(1)
+
+            Backendless.Data.of("Appointment").find(query,
+                object : AsyncCallback<List<Map<*, *>>> {
+                    override fun handleResponse(response: List<Map<*, *>>) {
+                        val record = response.firstOrNull()
+
+                        if (record == null) {
+                            onSuccess(null)
+                            return
+                        }
+
+                        val objectId = record["objectId"]?.toString()
+                        if (objectId.isNullOrBlank()) {
+                            onError("The appointment is missing its ID.")
+                            return
+                        }
+
+                        val dateAndTime = when (val value = record["appointmentDate"]) {
+                            is Date -> value
+                            is Number -> Date(value.toLong())
+                            else -> null
+                        }
+
+                        if (dateAndTime == null) {
+                            onError("The appointment has an invalid date.")
+                            return
+                        }
+
+                        val appointment = Appointment(
+                            objectId = objectId,
+                            dateAndTime = dateAndTime,
+                            requestStatus = record["requestStatus"]?.toString().orEmpty(),
+                            notes = record["notes"]?.toString().orEmpty()
+                        )
+
+                        onSuccess(appointment)
+
+                    }
+
+                    override fun handleFault(fault: BackendlessFault) {
+                        Log.e("AppointmentController", "Could not find appointment: ${fault.message}")
+                        onError(fault.message ?: "Could not find the appointment.")
+                    }
+                }
+            )
+
+    }
     fun submitVisit(
         requestId: String,
         petId: String,

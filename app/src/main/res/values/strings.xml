@@ -31,4 +31,10 @@
     <string name="visit_login_required">Log in before submitting a visit request.</string>
     <string name="visit_pet_required">Select a real pet before submitting a visit request.</string>
     <string name="notes">Notes (Optional)</string>
+    <string name="reschedule_appointment">Reschedule Appointment</string>
+    <string name="cancel_appointment">Cancel Appointment</string>
+    <string name="visit_retry">Retry</string>
+    <string name="visit_checking">Checking your appointments…</string>
+    <string name="visit_lookup_identity_required">Log in and select a pet first.</string>
+    <string name="visit_saved_reload">Your request was saved, but its details could not be loaded. Tap Retry.</string>
 </resources>

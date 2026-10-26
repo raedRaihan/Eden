@@ -9,6 +9,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import android.widget.LinearLayout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -51,7 +52,82 @@ fun VisitationForm(navController: NavController, chosenPet: HashMap<*, *>) {
                 var submitting = false
                 var submitted = false
                 val requestId = UUID.randomUUID().toString()
+                val bookingContainer = view.findViewById<LinearLayout>(R.id.bookingFormContainer)
+                val existingContainer = view.findViewById<LinearLayout>(R.id.existingAppointmentContainer)
+                val appointmentSummary = view.findViewById<TextView>(R.id.appointmentSummary)
+                val lookupMessage = view.findViewById<TextView>(R.id.errorOrLoadText)
+                val backButton2 = view.findViewById<Button>(R.id.visitBackButton2)
+                val retryButton = view.findViewById<Button>(R.id.visitRetryButton)
+
+                var existingAppointment: Appointment? = null
                 view.tag = true
+
+                fun checkAppointment() {
+                    bookingContainer.visibility = View.GONE
+                    existingContainer.visibility = View.GONE
+                    lookupMessage.visibility = View.VISIBLE
+                    lookupMessage.setText(R.string.visit_checking)
+                    retryButton.visibility = View.GONE
+
+                    val userId = MainActivity.loggedInUser?.objectId
+                    val petId = chosenPet["objectId"]?.toString()
+
+                    if (userId.isNullOrBlank() || petId.isNullOrBlank()) {
+                        lookupMessage.setText(R.string.visit_lookup_identity_required)
+                        return
+                    }
+
+                    AppointmentController().findVisitAppointment(
+                        userId = userId,
+                        petId = petId,
+                        onSuccess = { appointment ->
+                            view.post {
+                                if (view.tag == true) {
+                                    existingAppointment = appointment
+                                    lookupMessage.visibility = View.GONE
+
+                                    if (appointment == null) {
+                                        if (submitted) {
+                                            lookupMessage.setText(R.string.visit_saved_reload)
+                                            lookupMessage.visibility = View.VISIBLE
+                                            retryButton.visibility = View.VISIBLE
+                                        } else {
+                                            bookingContainer.visibility = View.VISIBLE
+                                        }
+                                    } else {
+                                        val date = android.text.format.DateFormat
+                                            .getDateFormat(context)
+                                            .format(appointment.dateAndTime)
+
+                                        val time = android.text.format.DateFormat
+                                            .getTimeFormat(context)
+                                            .format(appointment.dateAndTime)
+
+                                        val notes = appointment.notes.ifBlank { "No notes" }
+
+                                        appointmentSummary.text =
+                                            "Visit with ${chosenPet["name"] ?: "Unknown"}\n\n" +
+                                                    "Date: $date\n" +
+                                                    "Time: $time\n" +
+                                                    "Status: ${appointment.requestStatus}\n\n" +
+                                                    "Notes: $notes"
+
+                                        existingContainer.visibility = View.VISIBLE
+                                    }
+                                }
+                            }
+                        },
+                        onError = { message ->
+                            view.post {
+                                if (view.tag == true) {
+                                    lookupMessage.text = message
+                                    lookupMessage.visibility = View.VISIBLE
+                                    retryButton.visibility = View.VISIBLE
+                                }
+                            }
+                        }
+                    )
+                }
 
                 title.text = context.getString(R.string.visit_pet_title, chosenPet["name"]?.toString() ?: "Unknown")
 
@@ -91,7 +167,7 @@ fun VisitationForm(navController: NavController, chosenPet: HashMap<*, *>) {
                 }
 
                 reviewButton.setOnClickListener {
-                    if (submitting || submitted) return@setOnClickListener
+                    if (submitting || submitted || existingAppointment != null) return@setOnClickListener
                     visitDateTime.set(Calendar.SECOND, 0)
                     visitDateTime.set(Calendar.MILLISECOND, 0)
                     val userNotes = notesEditText.text.toString().trim()
@@ -161,6 +237,7 @@ fun VisitationForm(navController: NavController, chosenPet: HashMap<*, *>) {
                                                 errorMessage.setTextColor(android.graphics.Color.rgb(46, 125, 50))
                                                 errorMessage.visibility = View.VISIBLE
                                                 backButton.isEnabled = true
+                                                checkAppointment()
                                             }
                                         }
                                     },
@@ -177,6 +254,7 @@ fun VisitationForm(navController: NavController, chosenPet: HashMap<*, *>) {
                                                 timeButton.isEnabled = true
                                                 reviewButton.isEnabled = true
                                                 backButton.isEnabled = true
+                                                notesEditText.isEnabled = true
                                             }
                                         }
                                     }
@@ -188,6 +266,10 @@ fun VisitationForm(navController: NavController, chosenPet: HashMap<*, *>) {
                 }
 
                 backButton.setOnClickListener { navController.popBackStack() }
+                backButton2.setOnClickListener { navController.popBackStack() }
+
+                retryButton.setOnClickListener { checkAppointment() }
+                checkAppointment()
                 view
             },
             onRelease = {
