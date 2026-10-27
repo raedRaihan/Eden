@@ -131,13 +131,6 @@
         </ScrollView>
 
         <Button
-            android:id="@+id/rescheduleButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="@string/reschedule_appointment" />
-
-        <Button
             android:id="@+id/cancelButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

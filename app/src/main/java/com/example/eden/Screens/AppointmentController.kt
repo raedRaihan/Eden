@@ -138,4 +138,29 @@ class AppointmentController {
             }
         })
     }
+    fun cancelVisit(
+        appointmentId: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        if (appointmentId.isBlank()) {
+            onError("Appointment ID is missing.")
+            return
+        }
+
+        val appointment = mapOf("objectId" to appointmentId)
+
+        Backendless.Data.of("Appointment").remove(
+            appointment,
+            object : AsyncCallback<Long> {
+                override fun handleResponse(response: Long) {
+                    onSuccess()
+                }
+
+                override fun handleFault(fault: BackendlessFault) {
+                    onError(fault.message ?: "Could not cancel the appointment.")
+                }
+            }
+        )
+    }
 }

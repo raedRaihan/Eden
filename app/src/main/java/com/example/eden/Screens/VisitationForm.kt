@@ -66,6 +66,8 @@ fun VisitationForm(navController: NavController, chosenPet: HashMap<*, *>) {
                 val loadingSpinner = view.findViewById<ProgressBar>(R.id.visitLoadingSpinner)
                 loadingSpinner.indeterminateTintList = ColorStateList.valueOf(colors.primary.toArgb())
 
+                val cancelButton = view.findViewById<Button>(R.id.cancelButton)
+
                 var existingAppointment: Appointment? = null
                 view.tag = true
 
@@ -274,6 +276,40 @@ fun VisitationForm(navController: NavController, chosenPet: HashMap<*, *>) {
                         }
                         dialog.show()
                     }
+                }
+
+                cancelButton.setOnClickListener {
+                    val appointment = existingAppointment
+                        ?: return@setOnClickListener
+
+                    AlertDialog.Builder(themedContext)
+                        .setTitle("Cancel appointment?")
+                        .setMessage("This will delete your visitation appointment.")
+                        .setNegativeButton("Keep appointment", null)
+                        .setPositiveButton("Cancel appointment") { _, _ ->
+                            cancelButton.isEnabled = false
+
+                            AppointmentController().cancelVisit(
+                                appointmentId = appointment.objectId,
+                                onSuccess = {
+                                    view.post {
+                                        if (view.tag == true) {
+                                            navController.popBackStack()
+                                        }
+                                    }
+                                },
+                                onError = { message ->
+                                    view.post {
+                                        if (view.tag == true) {
+                                            cancelButton.isEnabled = true
+                                            lookupMessage.text = message
+                                            lookupMessage.visibility = View.VISIBLE
+                                        }
+                                    }
+                                }
+                            )
+                        }
+                        .show()
                 }
 
                 backButton.setOnClickListener { navController.popBackStack() }
