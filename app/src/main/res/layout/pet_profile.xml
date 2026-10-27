@@ -2,9 +2,134 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    android:gravity="center_horizontal"
-    >
+    android:background="#9abae1"
+    android:gravity="center_horizontal">
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/petProfileImage"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:padding="5dp"
+        app:strokeWidth="10dp"
+        app:strokeColor="@android:color/holo_blue_light"
+        app:shapeAppearanceOverlay="@style/circleImageView"
+        android:layout_margin="10dp"
+        android:scaleType="centerCrop"
+        />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        >
+
+
+
+        <TextView
+            android:id="@+id/petProfileName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="20dp"
+            android:text="Pet Name: "
+            android:textSize="20sp"
+            android:textColor="#FFFFFF"
+            android:layout_gravity="center"
+            />
+
+        <TextView
+            android:id="@+id/petProfileDescription"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="20dp"
+            android:textSize="17sp"
+            android:text="Pet Description: "
+            android:textColor="#FFFFFF"
+            android:layout_gravity="center"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding = "1dp"
+            android:layout_gravity="center"
+            >
+
+            <TextView
+                android:id="@+id/petProfileSpecies"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="25dp"
+                android:textSize="15sp"
+                android:textColor="#FFFFFF"
+                android:text="Pet Species: "
+                android:layout_gravity="center"
+                />
+
+            <TextView
+                android:id="@+id/petProfileBreed"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="25dp"
+                android:textSize="15sp"
+                android:textColor="#FFFFFF"
+                android:text="Pet Breed: "
+                android:layout_gravity="center"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding = "1dp"
+            android:layout_gravity="center_horizontal"
+            >
+            <TextView
+                android:id="@+id/petProfileAge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="20dp"
+                android:text="Pet Age: "
+                android:textSize="15sp"
+                android:textColor="#FFFFFF"
+                android:layout_gravity="center"/>
+
+            <TextView
+                android:id="@+id/petProfileGender"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="20dp"
+                android:textSize="15sp"
+                android:text="Pet Gender: "
+                android:textColor="#FFFFFF"
+                android:layout_gravity="center"/>
+
+            <TextView
+                android:id="@+id/petProfileSize"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="20dp"
+                android:textSize="15sp"
+                android:text="Pet Size: "
+                android:textColor="#FFFFFF"
+                android:layout_gravity="center"/>
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/petProfileAvailability"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="20dp"
+            android:textSize="20sp"
+            android:text="Pet Availability: "
+            android:textColor="#FFFFFF"
+            android:layout_gravity="center"/>
+
+    </LinearLayout>
+
 
 
     <Button
@@ -21,11 +146,12 @@
 
         android:text="Visitation Form" />
 
-    <ImageView
-        android:id="@+id/myImageView"
-        android:layout_width="300dp"
-        android:layout_height="300dp"
-        android:layout_centerInParent="true"
-        android:contentDescription="Image loaded from link" />
+    <Button
+        android:id="@+id/recordsButton"
+        android:layout_width="245dp"
+        android:layout_height="wrap_content"
+
+        android:text="Medical Records" />
+
 
 </LinearLayout>
