@@ -1,17 +1,13 @@
 package com.example.eden.Screens
 
-import android.annotation.SuppressLint
 import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import android.widget.TextView
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import android.widget.Button
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
@@ -19,7 +15,6 @@ import com.example.eden.R
 import com.example.eden.uiElements.BottomBar
 import com.example.eden.uiElements.TopBar
 
-@SuppressLint("MissingInflatedId")
 @Composable
 fun AdoptionForm(navController: NavController, chosenPet: HashMap<*, *>)
 {
@@ -35,16 +30,20 @@ fun AdoptionForm(navController: NavController, chosenPet: HashMap<*, *>)
                     context,
                     com.google.android.material.R.style.Theme_MaterialComponents_DayNight_NoActionBar
                 )
+
                 val view = LayoutInflater.from(newContext).inflate(R.layout.adoption_form, null, false)
 
-                var title=view.findViewById<TextView>(R.id.afTemp)
+                val title = view.findViewById<TextView>(R.id.afTemp)
+                title.text = context.getString(
+                    R.string.adoption_pet_title,
+                    chosenPet["name"]?.toString() ?: context.getString(R.string.unknown_pet)
+                )
 
-                title.text = buildString {
-                    append("Adoption form for ")
-                    append((chosenPet["name"] ?: "Unknown") as CharSequence?)
+                val backButton = view.findViewById<Button>(R.id.adoptionBackButton)
+
+                backButton.setOnClickListener {
+                    navController.popBackStack()
                 }
-
-
                 view
             }
 

@@ -1,12 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp">
 
     <TextView
         android:id="@+id/afTemp"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:text="Adoption Form" />
+        android:text="@string/adoption_title"
+        android:textSize="24sp" />
+
+    <EditText
+        android:id="@+id/adoptionNotesInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:minLines="4"
+        android:maxLength="500"
+        android:gravity="top|start"
+        android:hint="@string/adoption_application_hint"
+        android:inputType="textMultiLine"
+        android:importantForAutofill="no" />
+
+    <Button
+        android:id="@+id/adoptionReviewButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="@string/visit_review_title" />
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <Button
+        android:id="@+id/adoptionBackButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/visit_back" />
+
 </LinearLayout>

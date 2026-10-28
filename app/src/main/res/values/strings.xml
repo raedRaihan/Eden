@@ -37,4 +37,9 @@
     <string name="visit_checking">Checking your appointments…</string>
     <string name="visit_lookup_identity_required">Log in and select a pet first.</string>
     <string name="visit_saved_reload">Your request was saved, but its details could not be loaded. Tap Retry.</string>
+    <string name="adoption_title">Adoption application</string>
+    <string name="adoption_pet_title">Adoption application for %1$s</string>
+    <string name="unknown_pet">Unknown</string>
+    <string name="adoption_application_hint">Tell us why you would like to adopt this pet</string>
+    <string name="adoption_application_required">Please write your application before continuing.</string>
 </resources>
