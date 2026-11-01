@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import android.view.View
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
+import com.bumptech.glide.Glide
 import com.example.eden.MainActivity.Companion.chosenPetGlobal
 import com.example.eden.R
 import com.example.eden.uiElements.BottomBar
@@ -55,6 +57,10 @@ fun SearchResults(navController: NavController, queryResults:List<Map<*, *>>)
                         append("Name: ")
                         append(pet["name"] ?: "Unknown")
                     }
+
+                    val imageView=box.findViewById<ImageView>(R.id.animalPicture)
+
+                    Glide.with(view).load(pet["image"]).into(imageView)
 
                     box.findViewById<TextView>(R.id.animalSpecies).text = buildString {
                         append("Species: ")

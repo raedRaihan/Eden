@@ -43,6 +43,7 @@ import com.example.eden.util.Constants.API_KEY
 import com.example.eden.util.Constants.APP_ID
 
 import com.example.eden.Screens.Login
+import com.example.eden.Screens.MedicalRecords
 import com.example.eden.Screens.Notifications
 import com.example.eden.Screens.PetProfile
 import com.example.eden.Screens.Preferences
@@ -311,6 +312,10 @@ class MainActivity : ComponentActivity() {
                 composable("visitationForm")
                 {
                     VisitationForm(navController= navController, chosenPetGlobal)
+                }
+                composable("medicalRecords")
+                {
+                    MedicalRecords(navController= navController, chosenPetGlobal)
                 }
                 composable("searchResults")
                 {

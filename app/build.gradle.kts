@@ -77,5 +77,7 @@ dependencies {
 
     implementation("androidx.compose.material:material-icons-core:1.7.8")
 
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+
 
 }
