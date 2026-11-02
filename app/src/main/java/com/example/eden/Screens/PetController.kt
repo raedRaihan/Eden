@@ -33,7 +33,8 @@ class PetController {
                                 record["name"]?.toString() ?: "Unnamed pet",
                                 record["species"]?.toString() ?: "Unknown species",
                                 description,
-                                record["objectId"]?.toString()
+                                record["objectId"]?.toString(),
+                                record.toMap()
                             )
                         }
                         pets.addAll(page)

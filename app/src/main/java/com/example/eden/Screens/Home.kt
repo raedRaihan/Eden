@@ -73,12 +73,7 @@ fun Home(navController: NavController) {
                     }
                     list.setOnItemClickListener { _, _, position, _ ->
                         val pet = visiblePets[position]
-                        chosenPetGlobal = hashMapOf(
-                            "objectId" to pet.objectId,
-                            "name" to pet.name,
-                            "species" to pet.species,
-                            "description" to pet.description
-                        )
+                        chosenPetGlobal = HashMap(pet.record)
                         navController.navigate("petProfile")
                     }
                 }

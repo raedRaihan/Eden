@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import android.widget.Button
+import android.widget.EditText
+import android.app.AlertDialog
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
@@ -40,9 +42,35 @@ fun AdoptionForm(navController: NavController, chosenPet: HashMap<*, *>)
                 )
 
                 val backButton = view.findViewById<Button>(R.id.adoptionBackButton)
+                val notesInput = view.findViewById<EditText>(R.id.adoptionNotesInput)
+                val reviewButton = view.findViewById<Button>(R.id.adoptionReviewButton)
 
                 backButton.setOnClickListener {
                     navController.popBackStack()
+                }
+                reviewButton.setOnClickListener {
+                    val applicationText = notesInput.text.toString().trim()
+
+                    if (applicationText.isBlank()) {
+                        notesInput.error = context.getString(
+                            R.string.adoption_application_required
+                        )
+                        notesInput.requestFocus()
+                        return@setOnClickListener
+                    }
+
+                    notesInput.error = null
+
+                    AlertDialog.Builder(newContext)
+                        .setTitle(R.string.visit_review_title)
+                        .setMessage(
+                            context.getString(
+                                R.string.adoption_review_summary,
+                                applicationText
+                            )
+                        )
+                        .setNegativeButton(R.string.adoption_back_to_form, null)
+                        .show()
                 }
                 view
             }
