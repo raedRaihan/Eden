@@ -138,6 +138,66 @@ class AppointmentController {
             }
         })
     }
+
+    fun submitAdoption(
+        requestId: String,
+        petId: String,
+        userId: String,
+        notes: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val applicationText = notes.trim()
+
+        if (requestId.isBlank() || petId.isBlank() || userId.isBlank()) {
+            onError("Sign in and select a pet before applying.")
+            return
+        }
+
+        if (applicationText.isBlank() || applicationText.length > 500) {
+            onError("Write an application between 1 and 500 characters.")
+            return
+        }
+
+        val transaction = UnitOfWork()
+
+        transaction.upsert(
+            "Appointment",
+            mapOf(
+                "objectId" to requestId,
+                "appointmentType" to "ADOPTION",
+                "requestStatus" to "PENDING",
+                "notes" to applicationText
+            )
+        )
+
+        transaction.setRelation(
+            "Appointment", requestId, "animal", arrayOf(petId)
+        )
+
+        transaction.setRelation(
+            "Appointment", requestId, "userId", arrayOf(userId)
+        )
+
+        transaction.execute(
+            object : AsyncCallback<UnitOfWorkResult> {
+                override fun handleResponse(response: UnitOfWorkResult) {
+                    if (response.isSuccess) {
+                        onSuccess()
+                    } else {
+                        onError("Could not save your application. Please try again.")
+                    }
+                }
+
+                override fun handleFault(fault: BackendlessFault) {
+                    onError(
+                        fault.message ?: "Could not submit your application."
+                    )
+                }
+            }
+        )
+    }
+
     fun cancelVisit(
         appointmentId: String,
         onSuccess: () -> Unit,
