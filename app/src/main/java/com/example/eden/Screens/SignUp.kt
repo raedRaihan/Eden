@@ -1,5 +1,6 @@
 package com.example.eden.Screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -63,6 +64,7 @@ fun SignUp(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(Color(0xFF9abae1))
             .padding(horizontal = 24.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
