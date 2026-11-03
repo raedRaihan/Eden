@@ -198,6 +198,63 @@ class AppointmentController {
         )
     }
 
+    fun findAdoptionApplication(
+        userId: String,
+        petId: String,
+        onSuccess: (AdoptionApplication?) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        if (userId.isBlank() || petId.isBlank()) {
+            onError("Sign in and select a pet first.")
+            return
+        }
+
+        val query = DataQueryBuilder.create()
+            .setWhereClause(
+                "userId.objectId = '$userId' AND " +
+                        "animal.objectId = '$petId' AND " +
+                        "appointmentType = 'ADOPTION'"
+            )
+            .setSortBy("created", "objectId")
+            .setPageSize(1)
+
+        Backendless.Data.of("Appointment").find(
+            query,
+            object : AsyncCallback<List<Map<*, *>>> {
+                override fun handleResponse(response: List<Map<*, *>>) {
+                    val record = response.firstOrNull()
+
+                    if (record == null) {
+                        onSuccess(null)
+                        return
+                    }
+
+                    val objectId = record["objectId"]?.toString()
+
+                    if (objectId.isNullOrBlank()) {
+                        onError("The application is missing its ID.")
+                        return
+                    }
+
+                    val application = AdoptionApplication(
+                        objectId = objectId,
+                        requestStatus = record["requestStatus"]
+                            ?.toString().orEmpty(),
+                        notes = record["notes"]?.toString().orEmpty()
+                    )
+
+                    onSuccess(application)
+                }
+
+                override fun handleFault(fault: BackendlessFault) {
+                    onError(
+                        fault.message ?: "Could not load your application."
+                    )
+                }
+            }
+        )
+    }
+
     fun cancelVisit(
         appointmentId: String,
         onSuccess: () -> Unit,
