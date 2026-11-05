@@ -7,6 +7,7 @@
         <item>Dog</item>
         <item>Cat</item>
         <item>Rabbit</item>
+        <item>User Preferences</item>
     </string-array>
     <string name="pets_load_error">Could not load pets. Check your connection and tap Refresh.</string>
     <string name="refresh_pets">Refresh</string>
