@@ -13,7 +13,7 @@
         android:layout_height="200dp"
         android:padding="5dp"
         app:strokeWidth="10dp"
-        app:strokeColor="@android:color/holo_blue_light"
+        app:strokeColor="#213d6c"
         app:shapeAppearanceOverlay="@style/circleImageView"
         android:layout_margin="10dp"
         android:scaleType="centerCrop"
@@ -136,21 +136,18 @@
         android:id="@+id/adoptionButton"
         android:layout_width="238dp"
         android:layout_height="wrap_content"
-
         android:text="Adoption Form" />
 
     <Button
         android:id="@+id/visitButton"
         android:layout_width="245dp"
         android:layout_height="wrap_content"
-
         android:text="Visitation Form" />
 
     <Button
         android:id="@+id/recordsButton"
         android:layout_width="245dp"
         android:layout_height="wrap_content"
-
         android:text="Medical Records" />
 
 

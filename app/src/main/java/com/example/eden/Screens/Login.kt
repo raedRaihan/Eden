@@ -30,6 +30,7 @@ import com.example.eden.R
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.ui.layout.ContentScale
 
 class Login {
@@ -103,7 +104,8 @@ class Login {
             Button(
                 onClick = { onSubmit(email.trim(), password) },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !loading && email.isNotBlank() && password.isNotBlank()
+                enabled = !loading && email.isNotBlank() && password.isNotBlank(),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF213d6c), contentColor = Color.White)
             ) {
                 if (loading) {
                     CircularProgressIndicator()
@@ -115,7 +117,8 @@ class Login {
             OutlinedButton(
                 onClick = onSignUp,
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !loading
+                enabled = !loading,
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF213d6c), contentColor = Color.White)
             ) {
                 Text("Sign up")
             }

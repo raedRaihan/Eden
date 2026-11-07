@@ -1,4 +1,4 @@
-package com.example.eden.appointments
+package com.example.eden.records
 
 import java.time.LocalDate
 

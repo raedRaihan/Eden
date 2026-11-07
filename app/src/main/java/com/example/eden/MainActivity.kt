@@ -284,11 +284,11 @@ class MainActivity : ComponentActivity() {
                 }
                 composable("home")
                 {
-                    Home(navController= navController)
+                    Home(navController= navController, email = loggedInEmail.orEmpty())
                 }
                 composable("notifications")
                 {
-                    Notifications(navController= navController)
+                    Notifications(navController= navController, email = loggedInEmail.orEmpty())
                 }
                 composable("petProfile")
                 {

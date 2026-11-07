@@ -30,10 +30,11 @@ import com.example.eden.MainActivity.Companion.chosenPetGlobal
 import com.example.eden.MainActivity.Companion.queryResultsGlobal
 import com.example.eden.uiElements.TopBar
 import com.example.eden.uiElements.BottomBar
+import com.example.eden.users.AdopterPreferencesController
 import kotlin.collections.get
 
 @Composable
-fun Home(navController: NavController) {
+fun Home(navController: NavController, email: String) {
     val colors = MaterialTheme.colorScheme
 
     Scaffold(
@@ -212,7 +213,72 @@ fun Home(navController: NavController) {
                     }
                     else if(spinner.selectedItem.toString() == "User Preferences")
                     {
+                        val aPC= AdopterPreferencesController()
+                        aPC.findPreferances(email,
 
+                            onSuccess= {    response ->
+
+
+                                Log.d("AdopterPreferencesController", response.toString())
+                                for(adopter in response)
+                                {
+                                    if(adopter["breedPreference"] != null)
+                                    {
+                                        chosenBreed = adopter["breedPreference"].toString()
+                                    }
+                                    if(adopter["speciesPreference"] != null)
+                                    {
+                                        chosenSpecies = adopter["speciesPreference"].toString()
+                                    }
+                                    if(adopter["genderPreference"] != null)
+                                    {
+                                        chosenGender = adopter["genderPreference"].toString()
+                                    }
+                                    if(adopter["ageMaxPreference"] != null)
+                                    {
+                                        maxAgeEntry = adopter["ageMaxPreference"] as Nothing?
+                                    }
+                                    if(adopter["ageMinPreference"] != null)
+                                    {
+                                        minAgeEntry = adopter["ageMinPreference"] as Nothing?
+                                    }
+                                    if(adopter["sizePreference"] != null)
+                                    {
+                                        chosenSize = adopter["sizePreference"].toString()
+                                    }
+                                    resultsQueryOut.removeAllViews()
+
+                                    loadPets(minAgeEntry = minAgeEntry.toString(), maxAgeEntry = maxAgeEntry.toString(),
+                                        chosenSpecies = chosenSpecies, chosenBreed = chosenBreed, chosenSize = chosenSize,chosenGender = chosenGender)
+
+                                    refresh.isEnabled=false
+                                    minAgeEntry = null
+                                    maxAgeEntry = null
+                                    chosenSpecies = "None"
+                                    chosenBreed = "None"
+                                    chosenSize = "None"
+                                    chosenGender = "None"
+
+                                    //Log.d("AdopterPreferencesController", adopter["speciesPreference"].toString())
+
+                                }
+
+                                if(response.isEmpty())
+                                {
+                                    resultsQueryOut.removeAllViews()
+                                    chosenSpecies = "None"
+                                    loadPets(minAgeEntry = minAgeEntry.toString(), maxAgeEntry = maxAgeEntry.toString(),
+                                        chosenSpecies = chosenSpecies, chosenBreed = chosenBreed, chosenSize = chosenSize,chosenGender = chosenGender)
+                                    refresh.isEnabled=false
+                                }
+
+
+
+                            },
+                            onError= {message -> Log.e("AdopterPreferencesController","Search faliure message: "+message)
+
+                            }
+                        )
                     }
                 }
 
