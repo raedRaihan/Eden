@@ -12,6 +12,22 @@
         android:text="@string/adoption_title"
         android:textSize="24sp" />
 
+    <ProgressBar
+        android:id="@+id/adoptionLoading"
+        style="?android:attr/progressBarStyleSmall"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_gravity="center_horizontal"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/adoptionStatusMessage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:accessibilityLiveRegion="polite"
+        android:visibility="gone" />
+
     <EditText
         android:id="@+id/adoptionNotesInput"
         android:layout_width="match_parent"

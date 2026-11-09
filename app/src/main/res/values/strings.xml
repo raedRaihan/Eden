@@ -44,4 +44,9 @@
     <string name="adoption_application_required">Please write your application before continuing.</string>
     <string name="adoption_review_summary">Your application:\n\n%1$s\n\nOnce submitted, your application cannot be edited.</string>
     <string name="adoption_back_to_form">Back to form</string>
+    <string name="adoption_already_submitted">You have already submitted an application!</string>
+    <string name="adoption_accepted">Congratulations! Your adoption application has been accepted.</string>
+    <string name="adoption_rejected">Unfortunately, your adoption application was not accepted.</string>
+    <string name="adoption_status">Status: %1$s</string>
+    <string name="adoption_unavailable">This pet is not currently available for adoption.</string>
 </resources>

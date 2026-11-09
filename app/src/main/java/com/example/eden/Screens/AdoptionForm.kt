@@ -16,10 +16,19 @@ import androidx.navigation.NavController
 import com.example.eden.R
 import com.example.eden.uiElements.BottomBar
 import com.example.eden.uiElements.TopBar
+import android.content.res.ColorStateList
+import android.view.View
+import android.widget.ProgressBar
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.graphics.toArgb
+import com.example.eden.MainActivity
+import java.util.Locale
 
 @Composable
 fun AdoptionForm(navController: NavController, chosenPet: HashMap<*, *>)
 {
+    val colors = MaterialTheme.colorScheme
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = { TopBar(navController) },
@@ -44,6 +53,81 @@ fun AdoptionForm(navController: NavController, chosenPet: HashMap<*, *>)
                 val backButton = view.findViewById<Button>(R.id.adoptionBackButton)
                 val notesInput = view.findViewById<EditText>(R.id.adoptionNotesInput)
                 val reviewButton = view.findViewById<Button>(R.id.adoptionReviewButton)
+
+                val loading = view.findViewById<ProgressBar>(R.id.adoptionLoading)
+                val statusMessage = view.findViewById<TextView>(R.id.adoptionStatusMessage)
+
+                loading.indeterminateTintList =
+                    ColorStateList.valueOf(colors.primary.toArgb())
+
+                view.tag = true
+
+                fun checkApplication() {
+                    notesInput.visibility = View.GONE
+                    reviewButton.visibility = View.GONE
+                    statusMessage.visibility = View.GONE
+                    loading.visibility = View.VISIBLE
+
+                    val userId = MainActivity.loggedInUser?.objectId
+                    val petId = chosenPet["objectId"]?.toString()
+
+                    if (userId.isNullOrBlank() || petId.isNullOrBlank()) {
+                        loading.visibility = View.GONE
+                        statusMessage.setText(R.string.visit_lookup_identity_required)
+                        statusMessage.visibility = View.VISIBLE
+                        return
+                    }
+
+                    AppointmentController().findAdoptionApplication(
+                        userId = userId,
+                        petId = petId,
+                        onSuccess = { application ->
+                            view.post {
+                                if (view.tag == true) {
+                                    loading.visibility = View.GONE
+
+                                    if (application == null) {
+                                        if (chosenPet["status"] == "Available") {
+                                            notesInput.visibility = View.VISIBLE
+                                            reviewButton.visibility = View.VISIBLE
+                                        } else {
+                                            statusMessage.setText(R.string.adoption_unavailable)
+                                            statusMessage.visibility = View.VISIBLE
+                                        }
+                                    } else {
+                                        val status = application.requestStatus
+                                            .trim()
+                                            .uppercase(Locale.ROOT)
+
+                                        val messageId = when (status) {
+                                            "ACCEPTED" -> R.string.adoption_accepted
+                                            "REJECTED", "DENIED" -> R.string.adoption_rejected
+                                            else -> R.string.adoption_already_submitted
+                                        }
+
+                                        statusMessage.text =
+                                            context.getString(messageId) + "\n\n" +
+                                                    context.getString(
+                                                        R.string.adoption_status,
+                                                        status.ifBlank { "Unknown" }
+                                                    )
+
+                                        statusMessage.visibility = View.VISIBLE
+                                    }
+                                }
+                            }
+                        },
+                        onError = { message ->
+                            view.post {
+                                if (view.tag == true) {
+                                    loading.visibility = View.GONE
+                                    statusMessage.text = message
+                                    statusMessage.visibility = View.VISIBLE
+                                }
+                            }
+                        }
+                    )
+                }
 
                 backButton.setOnClickListener {
                     navController.popBackStack()
@@ -72,9 +156,12 @@ fun AdoptionForm(navController: NavController, chosenPet: HashMap<*, *>)
                         .setNegativeButton(R.string.adoption_back_to_form, null)
                         .show()
                 }
+                checkApplication()
                 view
+            },
+            onRelease = {
+                it.tag = false
             }
-
         )
 
     }
