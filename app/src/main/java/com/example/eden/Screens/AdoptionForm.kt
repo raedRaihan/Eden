@@ -23,6 +23,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.toArgb
 import com.example.eden.MainActivity
 import java.util.Locale
+import java.util.UUID
 
 @Composable
 fun AdoptionForm(navController: NavController, chosenPet: HashMap<*, *>)
@@ -56,11 +57,30 @@ fun AdoptionForm(navController: NavController, chosenPet: HashMap<*, *>)
 
                 val loading = view.findViewById<ProgressBar>(R.id.adoptionLoading)
                 val statusMessage = view.findViewById<TextView>(R.id.adoptionStatusMessage)
+                val controller = AppointmentController()
+                val requestId = UUID.randomUUID().toString()
+                var submitting = false
 
                 loading.indeterminateTintList =
                     ColorStateList.valueOf(colors.primary.toArgb())
 
                 view.tag = true
+
+                fun showApplicationStatus(requestStatus: String) {
+                    notesInput.visibility = View.GONE
+                    reviewButton.visibility = View.GONE
+
+                    val status = requestStatus.trim().uppercase(Locale.ROOT)
+                    val messageId = when (status) {
+                        "ACCEPTED" -> R.string.adoption_accepted
+                        "REJECTED", "DENIED" -> R.string.adoption_rejected
+                        else -> R.string.adoption_already_submitted
+                    }
+
+                    statusMessage.text = context.getString(messageId) + "\n\n" +
+                        context.getString(R.string.adoption_status, status.ifBlank { "Unknown" })
+                    statusMessage.visibility = View.VISIBLE
+                }
 
                 fun checkApplication() {
                     notesInput.visibility = View.GONE
@@ -78,7 +98,7 @@ fun AdoptionForm(navController: NavController, chosenPet: HashMap<*, *>)
                         return
                     }
 
-                    AppointmentController().findAdoptionApplication(
+                    controller.findAdoptionApplication(
                         userId = userId,
                         petId = petId,
                         onSuccess = { application ->
@@ -95,24 +115,7 @@ fun AdoptionForm(navController: NavController, chosenPet: HashMap<*, *>)
                                             statusMessage.visibility = View.VISIBLE
                                         }
                                     } else {
-                                        val status = application.requestStatus
-                                            .trim()
-                                            .uppercase(Locale.ROOT)
-
-                                        val messageId = when (status) {
-                                            "ACCEPTED" -> R.string.adoption_accepted
-                                            "REJECTED", "DENIED" -> R.string.adoption_rejected
-                                            else -> R.string.adoption_already_submitted
-                                        }
-
-                                        statusMessage.text =
-                                            context.getString(messageId) + "\n\n" +
-                                                    context.getString(
-                                                        R.string.adoption_status,
-                                                        status.ifBlank { "Unknown" }
-                                                    )
-
-                                        statusMessage.visibility = View.VISIBLE
+                                        showApplicationStatus(application.requestStatus)
                                     }
                                 }
                             }
@@ -133,6 +136,7 @@ fun AdoptionForm(navController: NavController, chosenPet: HashMap<*, *>)
                     navController.popBackStack()
                 }
                 reviewButton.setOnClickListener {
+                    if (submitting) return@setOnClickListener
                     val applicationText = notesInput.text.toString().trim()
 
                     if (applicationText.isBlank()) {
@@ -154,13 +158,61 @@ fun AdoptionForm(navController: NavController, chosenPet: HashMap<*, *>)
                             )
                         )
                         .setNegativeButton(R.string.adoption_back_to_form, null)
+                        .setPositiveButton(R.string.adoption_submit) { _, _ ->
+                            val userId = MainActivity.loggedInUser?.objectId
+                            val petId = chosenPet["objectId"]?.toString()
+
+                            if (userId.isNullOrBlank() || petId.isNullOrBlank()) {
+                                checkApplication()
+                                return@setPositiveButton
+                            }
+
+                            submitting = true
+                            notesInput.isEnabled = false
+                            reviewButton.isEnabled = false
+                            backButton.isEnabled = false
+                            statusMessage.visibility = View.GONE
+                            loading.visibility = View.VISIBLE
+
+                            controller.submitAdoption(
+                                requestId = requestId,
+                                petId = petId,
+                                userId = userId,
+                                notes = applicationText,
+                                onSuccess = {
+                                    view.post {
+                                        if (view.tag == true) {
+                                            submitting = false
+                                            loading.visibility = View.GONE
+                                            backButton.isEnabled = true
+                                            showApplicationStatus("PENDING")
+                                        }
+                                    }
+                                },
+                                onError = { message ->
+                                    view.post {
+                                        if (view.tag == true) {
+                                            submitting = false
+                                            loading.visibility = View.GONE
+                                            notesInput.isEnabled = true
+                                            reviewButton.isEnabled = true
+                                            backButton.isEnabled = true
+                                            statusMessage.text = message
+                                            statusMessage.visibility = View.VISIBLE
+                                        }
+                                    }
+                                }
+                            )
+                        }
                         .show()
+                        .also { view.setTag(R.id.adoptionReviewButton, it) }
                 }
                 checkApplication()
                 view
             },
             onRelease = {
                 it.tag = false
+                (it.getTag(R.id.adoptionReviewButton) as? AlertDialog)?.dismiss()
             }
         )
 
