@@ -1,5 +1,6 @@
 package com.example.eden.Screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -63,6 +65,7 @@ fun SignUp(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(Color(0xFF9abae1))
             .padding(horizontal = 24.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
@@ -126,7 +129,8 @@ fun SignUp(
         Button(
             onClick = ::submit,
             modifier = Modifier.fillMaxWidth(),
-            enabled = !loading
+            enabled = !loading,
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF213d6c), contentColor = Color.White)
         ) {
             if (loading) {
                 CircularProgressIndicator()
@@ -137,7 +141,8 @@ fun SignUp(
         OutlinedButton(
             onClick = onBackToLogin,
             modifier = Modifier.fillMaxWidth(),
-            enabled = !loading
+            enabled = !loading,
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF213d6c), contentColor = Color.White)
         ) {
             Text("Back to login")
         }

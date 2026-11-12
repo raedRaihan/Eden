@@ -119,6 +119,35 @@ class AdopterPreferencesController {
         )
     }
 
+    fun findPreferances(email: String, onSuccess:(List<Map<*, *>>) -> Unit, onError: (String) -> Unit)
+    {
+        val searchQuery = DataQueryBuilder.create().setPageSize(100)
+
+        searchQuery.setWhereClause("email = '$email'").setPageSize(1)
+
+        Backendless.Data.of("Adopters").find(searchQuery,
+            object : AsyncCallback<List<Map<*, *>>> {
+                override fun handleResponse(response: List<Map<*, *>>) {
+                    val record = response.firstOrNull()
+
+
+
+                    if(response.isEmpty())
+                    {
+                        Log.d("AdopterPreferencesController", "No adopter found")
+                    }
+                    onSuccess(response)
+
+                }
+
+                override fun handleFault(fault: BackendlessFault) {
+                    Log.e("AdopterPreferencesController", "Could not find the adopter: ${fault.message}")
+                    onError(fault.message ?: "Could not find the adopter.")
+                }
+            }
+        )
+    }
+
     private fun saveAdopter(
         adopter: HashMap<Any?, Any?>,
         onSuccess: () -> Unit,

@@ -22,9 +22,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import com.example.eden.R
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.ui.layout.ContentScale
 
 class Login {
     @Composable
@@ -41,10 +48,17 @@ class Login {
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(Color(0xFF9abae1))
                 .padding(horizontal = 24.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Image(
+                painter = painterResource(id = R.drawable.logo),
+                contentDescription = "Eden logo",
+                modifier = Modifier.size(400.dp),
+                contentScale = ContentScale.Crop
+            )
             Text(
                 text = "Eden",
                 style = MaterialTheme.typography.headlineMedium
@@ -90,7 +104,8 @@ class Login {
             Button(
                 onClick = { onSubmit(email.trim(), password) },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !loading && email.isNotBlank() && password.isNotBlank()
+                enabled = !loading && email.isNotBlank() && password.isNotBlank(),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF213d6c), contentColor = Color.White)
             ) {
                 if (loading) {
                     CircularProgressIndicator()
@@ -102,7 +117,8 @@ class Login {
             OutlinedButton(
                 onClick = onSignUp,
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !loading
+                enabled = !loading,
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF213d6c), contentColor = Color.White)
             ) {
                 Text("Sign up")
             }

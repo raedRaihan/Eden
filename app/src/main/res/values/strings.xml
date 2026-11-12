@@ -7,6 +7,7 @@
         <item>Dog</item>
         <item>Cat</item>
         <item>Rabbit</item>
+        <item>User Preferences</item>
     </string-array>
     <string name="pets_load_error">Could not load pets. Check your connection and tap Refresh.</string>
     <string name="refresh_pets">Refresh</string>
@@ -50,4 +51,5 @@
     <string name="adoption_rejected">Unfortunately, your adoption application was not accepted.</string>
     <string name="adoption_status">Status: %1$s</string>
     <string name="adoption_unavailable">This pet is not currently available for adoption.</string>
+    <string name="pets_no_preferences_matches">No available pets match your preferences.</string>
 </resources>
