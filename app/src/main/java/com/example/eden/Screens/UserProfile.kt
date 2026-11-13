@@ -45,6 +45,7 @@ fun UserProfile(
     last: String,
     email: String,
     accountType: String,
+    isAdmin: Boolean,
     backendlessUser: BackendlessUser?
 ) {
     var showQuiz by remember { mutableStateOf(false) }
@@ -99,11 +100,20 @@ fun UserProfile(
             }
 
             Spacer(Modifier.height(20.dp))
-            Button(
-                onClick = ::openQuiz,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Pet filtering quiz")
+            if (isAdmin) {
+                Button(
+                    onClick = { navController.navigate("adminDashboard") },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Admin Dashboard")
+                }
+            } else {
+                Button(
+                    onClick = ::openQuiz,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Pet filtering quiz")
+                }
             }
         }
     }

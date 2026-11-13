@@ -43,6 +43,7 @@ fun LogOutButton(navController: NavController)
                     MainActivity.loggedInFirst = ""
                     MainActivity.loggedInLast = ""
                     MainActivity.loggedInAccountType = ""
+                    MainActivity.loggedInIsAdmin = false
                     MainActivity.loading = false
                     MainActivity.errorMessage = null
 

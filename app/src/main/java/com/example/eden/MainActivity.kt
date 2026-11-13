@@ -31,7 +31,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.backendless.Backendless
 import com.backendless.BackendlessUser
+import com.backendless.async.callback.AsyncCallback
+import com.backendless.exceptions.BackendlessFault
 import com.example.eden.Screens.AccountSettings
+import com.example.eden.Screens.AdminDashboard
 import com.example.eden.Screens.AdoptionApproval
 import com.example.eden.Screens.AdoptionForm
 import com.example.eden.Screens.Calendar
@@ -71,6 +74,7 @@ class MainActivity : ComponentActivity() {
         var loggedInFirst by mutableStateOf("")
         var loggedInLast by mutableStateOf("")
         var loggedInAccountType by mutableStateOf("")
+        var loggedInIsAdmin by mutableStateOf(false)
         var loading by mutableStateOf(false)
         var errorMessage by mutableStateOf<String?>(null)
         var registrationMessage by mutableStateOf<String?>(null)
@@ -189,7 +193,37 @@ class MainActivity : ComponentActivity() {
                                                     loggedInName = listOf(loggedInFirst, loggedInLast)
                                                         .filter { it.isNotBlank() }
                                                         .joinToString(" ")
-                                                    loading = false
+
+                                                    Backendless.UserService.getUserRoles(
+                                                        object : AsyncCallback<List<String>> {
+                                                            override fun handleResponse(roles: List<String>) {
+                                                                runOnUiThread {
+                                                                    loggedInIsAdmin = roles.any {
+                                                                        it.equals("ADMIN", ignoreCase = true)
+                                                                    }
+                                                                    loggedInEmail = user.getProperty("email")
+                                                                        ?.toString()
+                                                                        .orEmpty()
+                                                                    loading = false
+                                                                }
+                                                            }
+
+                                                            override fun handleFault(fault: BackendlessFault) {
+                                                                runOnUiThread {
+                                                                    loggedInIsAdmin = loggedInAccountType
+                                                                        .equals("Admin", ignoreCase = true)
+                                                                    loggedInEmail = user.getProperty("email")
+                                                                        ?.toString()
+                                                                        .orEmpty()
+                                                                    loading = false
+                                                                    Log.w(
+                                                                        "BackendlessAuth",
+                                                                        "Could not retrieve user roles: ${fault.message}"
+                                                                    )
+                                                                }
+                                                            }
+                                                        }
+                                                    )
                                                 }
                                             },
                                             onError = { error ->
@@ -274,9 +308,29 @@ class MainActivity : ComponentActivity() {
                 {
                     Calendar(navController= navController)
                 }
+                composable("adminDashboard")
+                {
+                    if (loggedInIsAdmin) {
+                        AdminDashboard(navController = navController)
+                    } else {
+                        LaunchedEffect(Unit) {
+                            navController.navigate("home") {
+                                popUpTo("adminDashboard") { inclusive = true }
+                            }
+                        }
+                    }
+                }
                 composable("createAnimalProfile")
                 {
-                    CreateAnimalProfile(navController= navController)
+                    if (loggedInIsAdmin) {
+                        CreateAnimalProfile(navController = navController)
+                    } else {
+                        LaunchedEffect(Unit) {
+                            navController.navigate("home") {
+                                popUpTo("createAnimalProfile") { inclusive = true }
+                            }
+                        }
+                    }
                 }
                 composable("createUserProfile")
                 {
@@ -306,6 +360,7 @@ class MainActivity : ComponentActivity() {
                         last = loggedInLast,
                         email = loggedInEmail.orEmpty(),
                         accountType = loggedInAccountType,
+                        isAdmin = loggedInIsAdmin,
                         backendlessUser = loggedInUser
                     )
                 }
