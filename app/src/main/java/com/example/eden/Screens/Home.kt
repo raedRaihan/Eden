@@ -72,18 +72,20 @@ fun Home(navController: NavController, email: String) {
                 progress.indeterminateTintList = ColorStateList.valueOf(colors.primary.toArgb())
                 message.setTextColor(colors.onBackground.toArgb())
 
-                root.tag = true
+                // AndroidView.update may run more than once. The tag tracks whether
+                // this particular View instance has already been initialized.
+                root.tag = false
 
 
                 root
 
 
             },
-            update =  { view ->
+            update = { view ->
+                if (view.tag == true) return@AndroidView
+                view.tag = true
 
-                var resultsQueryOut = view.findViewById<LinearLayout>(R.id.resultsQueryHome)
-
-               // resultsQueryOut.removeAllViews()
+                val resultsQueryOut = view.findViewById<LinearLayout>(R.id.resultsQueryHome)
 
                 var inflater = LayoutInflater.from(resultsQueryOut.context)
 
@@ -94,7 +96,8 @@ fun Home(navController: NavController, email: String) {
 
                 fun loadPets(minAgeEntry: String, maxAgeEntry: String, chosenSpecies: String, chosenBreed: String, chosenSize: String,chosenGender: String)
                 {
-
+                    refresh.isEnabled = false
+                    resultsQueryOut.removeAllViews()
 
                     pc.searchForPet(name = "", minAge = minAgeEntry.toString(), maxAge = maxAgeEntry.toString(),
                         species = chosenSpecies, breed = chosenBreed, size = chosenSize,gender = chosenGender,
@@ -182,8 +185,9 @@ fun Home(navController: NavController, email: String) {
 
 
 
-                refresh.setOnClickListener{
-
+                refresh.setOnClickListener {
+                    if (!refresh.isEnabled) return@setOnClickListener
+                    refresh.isEnabled = false
 
                     if(spinner.selectedItem.toString() == "All pets")
                     {
@@ -283,8 +287,9 @@ fun Home(navController: NavController, email: String) {
 
 
                             },
-                            onError= {message -> Log.e("AdopterPreferencesController","Search faliure message: "+message)
-
+                            onError = { message ->
+                                Log.e("AdopterPreferencesController", "Search failure message: $message")
+                                refresh.isEnabled = true
                             }
                         )
                     }
