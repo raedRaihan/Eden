@@ -164,15 +164,21 @@ fun Home(navController: NavController, email: String) {
 
 
 
-                var minAgeEntry = null
-                var maxAgeEntry = null
+                var minAgeEntry: Int? = null
+                var maxAgeEntry: Int? = null
                 var chosenSpecies = "None"
                 var chosenBreed = "None"
                 var chosenSize = "None"
                 var chosenGender = "None"
 
-                loadPets(minAgeEntry = minAgeEntry.toString(), maxAgeEntry = maxAgeEntry.toString(),
-                    chosenSpecies = chosenSpecies, chosenBreed = chosenBreed, chosenSize = chosenSize,chosenGender = chosenGender)
+                loadPets(
+                    minAgeEntry = "",
+                    maxAgeEntry = "",
+                    chosenSpecies = chosenSpecies,
+                    chosenBreed = chosenBreed,
+                    chosenSize = chosenSize,
+                    chosenGender = chosenGender
+                )
 
 
 
@@ -183,7 +189,7 @@ fun Home(navController: NavController, email: String) {
                     {
                         resultsQueryOut.removeAllViews()
                         chosenSpecies = "None"
-                        loadPets(minAgeEntry = minAgeEntry.toString(), maxAgeEntry = maxAgeEntry.toString(),
+                        loadPets(minAgeEntry = minAgeEntry?.toString().orEmpty(), maxAgeEntry = maxAgeEntry?.toString().orEmpty(),
                             chosenSpecies = chosenSpecies, chosenBreed = chosenBreed, chosenSize = chosenSize,chosenGender = chosenGender)
                         refresh.isEnabled=false
                     }
@@ -191,7 +197,7 @@ fun Home(navController: NavController, email: String) {
                     {
                         resultsQueryOut.removeAllViews()
                         chosenSpecies = "Dog"
-                        loadPets(minAgeEntry = minAgeEntry.toString(), maxAgeEntry = maxAgeEntry.toString(),
+                        loadPets(minAgeEntry = minAgeEntry?.toString().orEmpty(), maxAgeEntry = maxAgeEntry?.toString().orEmpty(),
                             chosenSpecies = chosenSpecies, chosenBreed = chosenBreed, chosenSize = chosenSize,chosenGender = chosenGender)
                         refresh.isEnabled=false
                     }
@@ -199,7 +205,7 @@ fun Home(navController: NavController, email: String) {
                     {
                         resultsQueryOut.removeAllViews()
                         chosenSpecies = "Cat"
-                        loadPets(minAgeEntry = minAgeEntry.toString(), maxAgeEntry = maxAgeEntry.toString(),
+                        loadPets(minAgeEntry = minAgeEntry?.toString().orEmpty(), maxAgeEntry = maxAgeEntry?.toString().orEmpty(),
                             chosenSpecies = chosenSpecies, chosenBreed = chosenBreed, chosenSize = chosenSize,chosenGender = chosenGender)
                         refresh.isEnabled=false
                     }
@@ -207,7 +213,7 @@ fun Home(navController: NavController, email: String) {
                     {
                         resultsQueryOut.removeAllViews()
                         chosenSpecies = "Rabbit"
-                        loadPets(minAgeEntry = minAgeEntry.toString(), maxAgeEntry = maxAgeEntry.toString(),
+                        loadPets(minAgeEntry = minAgeEntry?.toString().orEmpty(), maxAgeEntry = maxAgeEntry?.toString().orEmpty(),
                             chosenSpecies = chosenSpecies, chosenBreed = chosenBreed, chosenSize = chosenSize,chosenGender = chosenGender)
                         refresh.isEnabled=false
                     }
@@ -236,11 +242,13 @@ fun Home(navController: NavController, email: String) {
                                     }
                                     if(adopter["ageMaxPreference"] != null)
                                     {
-                                        maxAgeEntry = adopter["ageMaxPreference"] as Nothing?
+                                        maxAgeEntry =
+                                            (adopter["ageMaxPreference"] as? Number)?.toInt()
                                     }
                                     if(adopter["ageMinPreference"] != null)
                                     {
-                                        minAgeEntry = adopter["ageMinPreference"] as Nothing?
+                                        minAgeEntry =
+                                            (adopter["ageMinPreference"] as? Number)?.toInt()
                                     }
                                     if(adopter["sizePreference"] != null)
                                     {
@@ -248,7 +256,7 @@ fun Home(navController: NavController, email: String) {
                                     }
                                     resultsQueryOut.removeAllViews()
 
-                                    loadPets(minAgeEntry = minAgeEntry.toString(), maxAgeEntry = maxAgeEntry.toString(),
+                                    loadPets(minAgeEntry = minAgeEntry?.toString().orEmpty(), maxAgeEntry = maxAgeEntry?.toString().orEmpty(),
                                         chosenSpecies = chosenSpecies, chosenBreed = chosenBreed, chosenSize = chosenSize,chosenGender = chosenGender)
 
                                     refresh.isEnabled=false
@@ -267,7 +275,7 @@ fun Home(navController: NavController, email: String) {
                                 {
                                     resultsQueryOut.removeAllViews()
                                     chosenSpecies = "None"
-                                    loadPets(minAgeEntry = minAgeEntry.toString(), maxAgeEntry = maxAgeEntry.toString(),
+                                    loadPets(minAgeEntry = minAgeEntry?.toString().orEmpty(), maxAgeEntry = maxAgeEntry?.toString().orEmpty(),
                                         chosenSpecies = chosenSpecies, chosenBreed = chosenBreed, chosenSize = chosenSize,chosenGender = chosenGender)
                                     refresh.isEnabled=false
                                 }
