@@ -1,7 +1,5 @@
 package com.example.eden.Screens
 
-import android.app.NotificationManager
-import android.content.Context
 import android.util.Log
 import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
@@ -9,133 +7,139 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.app.NotificationCompat
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.navigation.NavController
-import com.bumptech.glide.Glide
-import com.example.eden.MainActivity.Companion.chosenPetGlobal
 import com.example.eden.R
 import com.example.eden.notifications.notificationController
 import com.example.eden.uiElements.BottomBar
 import com.example.eden.uiElements.TopBar
-import com.google.gson.Gson
-import com.google.gson.JsonArray
-import java.text.SimpleDateFormat
-import java.util.Locale
-import kotlin.collections.get
+import com.google.android.material.R as MaterialR
 
 @Composable
-fun Notifications(navController: NavController, email: String)
-{
+fun Notifications(navController: NavController, email: String) {
+    var notifications by remember(email) {
+        mutableStateOf<List<Map<*, *>>>(emptyList())
+    }
+    var refreshKey by remember(email) { mutableIntStateOf(0) }
+
+    LaunchedEffect(email, refreshKey) {
+        if (email.isBlank()) {
+            notifications = emptyList()
+            return@LaunchedEffect
+        }
+
+        notificationController().searchForNotifications(
+            email = email,
+            onSuccess = { response -> notifications = response },
+            onError = { message ->
+                Log.e("Notifications", "Search failure: $message")
+            },
+        )
+    }
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = { TopBar(navController) },
-        bottomBar = { BottomBar(navController) }
+        bottomBar = { BottomBar(navController) },
     ) { innerPadding ->
         AndroidView(
-            modifier = Modifier.fillMaxSize().padding(innerPadding),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
             factory = { context ->
-                val newContext = ContextThemeWrapper(context, com.google.android.material.R.style.Theme_MaterialComponents_DayNight_NoActionBar)
+                val themedContext = ContextThemeWrapper(
+                    context,
+                    MaterialR.style.Theme_MaterialComponents_DayNight_NoActionBar,
+                )
+                LayoutInflater.from(themedContext).inflate(
+                    R.layout.notifications,
+                    null,
+                    false,
+                )
+            },
+            update = { view ->
+                val notificationCenter =
+                    view.findViewById<LinearLayout>(R.id.notificationCenter)
+                val testButton = view.findViewById<Button>(R.id.testNotification)
+                val controller = notificationController()
 
-                val view = LayoutInflater.from(newContext).inflate(R.layout.notifications,null, false)
-
-                Log.d("Notifications",("email name: "+email))
-                var TestButton=view.findViewById<Button>(R.id.testNotification)
-
-                TestButton.setOnClickListener {
-                    val nC = notificationController()
-                    nC.addNotification(email, "test notification")
-
-                    navController.navigate("notifications")
-                    val mBuilder = NotificationCompat.Builder(
-                        newContext,
-                        "Eden"
-
-                    ).setSmallIcon(R.drawable.logo).setContentTitle("Eden").setContentText("test notification")
-
+                testButton.setOnClickListener {
+                    controller.addNotification(
+                        email = email,
+                        message = "test notification",
+                        onSuccess = { refreshKey++ },
+                        onError = { message ->
+                            Log.e("Notifications", "Create failure: $message")
+                        },
+                    )
                 }
 
+                // Keep the test button, but rebuild the data-dependent rows.
+                while (notificationCenter.childCount > 1) {
+                    notificationCenter.removeViewAt(1)
+                }
 
-                view
+                val inflater = LayoutInflater.from(notificationCenter.context)
+                notifications
+                    .filter { it["active"] == true }
+                    .forEach { notification ->
+                        val row = inflater.inflate(
+                            R.layout.notification_entry,
+                            notificationCenter,
+                            false,
+                        )
+                        val notificationFrame =
+                            row.findViewById<LinearLayout>(R.id.notificationFrame)
+                        val newNotificationIcon =
+                            row.findViewById<ImageView>(R.id.newNotificationIcon)
+                        val notificationText =
+                            row.findViewById<TextView>(R.id.notificationText)
+                        val removeNotification =
+                            row.findViewById<ImageView>(R.id.removeNotification)
+                        val objectId = notification["objectId"]?.toString()
 
-            },
-
-            update =  { view ->
-
-                var notificationCenter = view.findViewById<LinearLayout>(R.id.notificationCenter)
-
-                //notificationCenter.removeAllViews()
-
-                val nC = notificationController()
-                //nC.addNotification(email, "test notification")
-
-                var inflater = LayoutInflater.from(notificationCenter.context)
-
-                nC.searchForNotifications(email,
-                    onSuccess= {    response ->
-
-                        for(notification in response) {
-                            if (notification["active"] == true)
-                            {
-                                val box = inflater.inflate(R.layout.notification_entry, notificationCenter, false)
-                                Log.d("Notifications",("Notification: "+notification))
-
-                                val notificationFrame = box.findViewById<LinearLayout>(R.id.notificationFrame)
-                                val newNotificationIcon=box.findViewById<ImageView>(R.id.newNotificationIcon)
-                                val notificationText=box.findViewById<TextView>(R.id.notificationText)
-                                val removeNotification=box.findViewById<ImageView>(R.id.removeNotification)
-
-                                if(notification["read"] == true)
-                                {
-                                    newNotificationIcon.visibility= android.view.View.INVISIBLE
-                                }
-
-
-                                notificationFrame.setOnClickListener {
-                                    Log.d("Notifications","Notification read")
-                                    nC.removeNotificationOrSetRead(notification["objectId"].toString(), true,
-                                        onSuccess= {   response ->  navController.navigate("notifications") }
-                                        )
-
-                                }
-
-                                removeNotification.setOnClickListener {
-                                    Log.d("Notifications","Notification removed")
-                                    nC.removeNotificationOrSetRead(notification["objectId"].toString(), false,
-                                        onSuccess= {    response ->  navController.navigate("notifications")}
-                                        )
-
-
-                                }
-
-                                notificationText.text = buildString {
-                                    append(notification["message"] ?: "Unknown")
-                                }
-
-                                notificationCenter.addView(box)
+                        newNotificationIcon.visibility =
+                            if (notification["read"] == true) {
+                                android.view.View.INVISIBLE
+                            } else {
+                                android.view.View.VISIBLE
                             }
+                        notificationText.text =
+                            notification["message"]?.toString() ?: "Unknown"
 
+                        notificationFrame.setOnClickListener {
+                            if (objectId != null && notification["read"] != true) {
+                                controller.removeNotificationOrSetRead(
+                                    objectId = objectId,
+                                    changeReadValue = true,
+                                    onSuccess = { refreshKey++ },
+                                )
+                            }
                         }
-                    },
-                    onError= {message -> Log.e("Notifications","Search faliure message: "+message)})
+                        removeNotification.setOnClickListener {
+                            if (objectId != null) {
+                                controller.removeNotificationOrSetRead(
+                                    objectId = objectId,
+                                    changeReadValue = false,
+                                    onSuccess = { refreshKey++ },
+                                )
+                            }
+                        }
 
-            }
-
-
-
-
+                        notificationCenter.addView(row)
+                    }
+            },
         )
-
     }
-
 }

@@ -1,9 +1,6 @@
 package com.example.eden.uiElements
 
 import android.util.Log
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -22,6 +19,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -109,40 +107,33 @@ fun BottomBar(navController: NavController)
 
 }
 
-var globalNotificationCount = 0
-
-fun countNotifications()
-{
-    val nc= notificationController()
-
-    var count = 0
-
-    nc.searchForNotifications(loggedInEmail,
-        onSuccess= {    response ->
-
-            for(notification in response)
-            {
-                if (notification["read"] == false && notification["active"] == true)
-                {
-                    count+=1
-                }
-
-            }
-            globalNotificationCount = count
-        },
-        onError= {message -> Log.e("Notifications","Search faliure message: "+message)})
-}
-
-
-
 @Composable
 //@Preview
 fun TopBar(navController: NavController)
 {
+    val backStackEntryState by navController.currentBackStackEntryAsState()
+    val currentRoute = backStackEntryState?.destination?.route
+    var notificationCount by remember(loggedInEmail) { mutableStateOf(0) }
 
-    var selectedIndex by remember{  mutableStateOf(-1)}
-    countNotifications()
+    LaunchedEffect(loggedInEmail, currentRoute) {
+        val email = loggedInEmail
+        if (email.isNullOrBlank()) {
+            notificationCount = 0
+            return@LaunchedEffect
+        }
 
+        notificationController().searchForNotifications(
+            email = email,
+            onSuccess = { response ->
+                notificationCount = response.count { notification ->
+                    notification["read"] == false && notification["active"] == true
+                }
+            },
+            onError = { message ->
+                Log.e("Notifications", "Count failure: $message")
+            },
+        )
+    }
 
             NavigationBar(modifier = Modifier.statusBarsPadding()) {
 
@@ -186,10 +177,14 @@ fun TopBar(navController: NavController)
                     },
                     icon = {
                         Icon(Icons.Default.Notifications, contentDescription = "Notifications")
-                        if(globalNotificationCount > 0)
+                        if(notificationCount > 0)
                         {
-                            Text(text = "+"+ globalNotificationCount.toString(), color = Color.Red, fontWeight = FontWeight.Bold, modifier = Modifier.align(
-                                Alignment.Top))
+                            Text(
+                                text = "+$notificationCount",
+                                color = Color.Red,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.align(Alignment.Top),
+                            )
                         }
 
 
