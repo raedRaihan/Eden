@@ -71,6 +71,61 @@ class AdopterPreferencesController {
         loadPage(0)
     }
 
+    fun loadPreferences(
+        user: BackendlessUser,
+        onSuccess: (AdopterPreferences?) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val userId = user.objectId
+        val email = user.getProperty("email")?.toString().orEmpty()
+        if (userId.isBlank()) {
+            onError("The logged-in user does not have an object ID.")
+            return
+        }
+
+        val whereClause = buildString {
+            append("user.objectId = '")
+            append(escapeForWhereClause(userId))
+            append("'")
+            if (email.isNotBlank()) {
+                append(" OR email = '")
+                append(escapeForWhereClause(email))
+                append("'")
+            }
+        }
+
+        val query = DataQueryBuilder.create()
+            .setWhereClause(whereClause)
+            .setPageSize(1)
+
+        Backendless.Data.of("Adopters").find(
+            query,
+            object : AsyncCallback<List<Map<*, *>>> {
+                override fun handleResponse(response: List<Map<*, *>>) {
+                    val record = response.firstOrNull()
+                    val preferences = record?.let {
+                        AdopterPreferences(
+                            ageMinPreference = (it["ageMinPreference"] as? Number)?.toInt(),
+                            ageMaxPreference = (it["ageMaxPreference"] as? Number)?.toInt(),
+                            breedPreference = it["breedPreference"]?.toString(),
+                            genderPreference = it["genderPreference"]?.toString(),
+                            speciesPreference = it["speciesPreference"]?.toString(),
+                            sizePreference = it["sizePreference"]?.toString()
+                        )
+                    }
+                    mainHandler.post { onSuccess(preferences) }
+                }
+
+                override fun handleFault(fault: BackendlessFault) {
+                    Log.e("AdopterPreferences", "Could not load preferences: ${fault.message}")
+                    mainHandler.post {
+                        onError(fault.message ?: "Could not load pet preferences.")
+                    }
+                }
+            }
+        )
+    }
+
     fun save(
         user: BackendlessUser,
         preferences: AdopterPreferences,

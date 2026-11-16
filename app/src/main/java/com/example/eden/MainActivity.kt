@@ -22,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -46,9 +47,11 @@ import com.example.eden.util.Constants.API_KEY
 import com.example.eden.util.Constants.APP_ID
 
 import com.example.eden.Screens.Login
+import com.example.eden.Screens.ManageUsers
 import com.example.eden.Screens.MedicalRecords
 import com.example.eden.Screens.Notifications
 import com.example.eden.Screens.PetProfile
+import com.example.eden.Screens.PreferenceQuizPrompt
 import com.example.eden.Screens.Preferences
 import com.example.eden.Screens.Search
 import com.example.eden.Screens.SearchResults
@@ -57,6 +60,7 @@ import com.example.eden.Screens.UserProfile
 import com.example.eden.Screens.VisitationForm
 import com.example.eden.authentication.googleLogin
 import com.example.eden.users.Adopter
+import com.example.eden.users.AdopterPreferencesController
 import com.example.eden.users.Users
 import com.example.eden.users.UsersController
 
@@ -137,6 +141,31 @@ class MainActivity : ComponentActivity() {
 
             // navigation
             val navController = rememberNavController()
+            var showPreferencePrompt by remember { mutableStateOf(false) }
+            var openQuizOnProfile by remember { mutableStateOf(false) }
+
+            fun checkPreferencePrompt(user: BackendlessUser) {
+                if (loggedInIsAdmin) {
+                    showPreferencePrompt = false
+                    return
+                }
+
+                AdopterPreferencesController().loadPreferences(
+                    user = user,
+                    onSuccess = { preferences ->
+                        if (loggedInUser?.objectId == user.objectId) {
+                            showPreferencePrompt = preferences == null
+                        }
+                    },
+                    onError = { error ->
+                        Log.w(
+                            "AdopterPreferences",
+                            "Could not check quiz completion: $error"
+                        )
+                    }
+                )
+            }
+
             NavHost(
                 navController = navController,
                 startDestination = if (skipLoginForDevelopment) "petProfile" else "login"
@@ -201,6 +230,7 @@ class MainActivity : ComponentActivity() {
                                                                     loggedInIsAdmin = roles.any {
                                                                         it.equals("ADMIN", ignoreCase = true)
                                                                     }
+                                                                    checkPreferencePrompt(user)
                                                                     loggedInEmail = user.getProperty("email")
                                                                         ?.toString()
                                                                         .orEmpty()
@@ -212,6 +242,7 @@ class MainActivity : ComponentActivity() {
                                                                 runOnUiThread {
                                                                     loggedInIsAdmin = loggedInAccountType
                                                                         .equals("Admin", ignoreCase = true)
+                                                                    checkPreferencePrompt(user)
                                                                     loggedInEmail = user.getProperty("email")
                                                                         ?.toString()
                                                                         .orEmpty()
@@ -320,6 +351,21 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 }
+                composable("manageUsers")
+                {
+                    if (loggedInIsAdmin) {
+                        ManageUsers(
+                            navController = navController,
+                            currentUserId = loggedInUser?.objectId.orEmpty()
+                        )
+                    } else {
+                        LaunchedEffect(Unit) {
+                            navController.navigate("home") {
+                                popUpTo("manageUsers") { inclusive = true }
+                            }
+                        }
+                    }
+                }
                 composable("createAnimalProfile")
                 {
                     if (loggedInIsAdmin) {
@@ -361,7 +407,9 @@ class MainActivity : ComponentActivity() {
                         email = loggedInEmail.orEmpty(),
                         accountType = loggedInAccountType,
                         isAdmin = loggedInIsAdmin,
-                        backendlessUser = loggedInUser
+                        backendlessUser = loggedInUser,
+                        openQuizOnEntry = openQuizOnProfile,
+                        onQuizOpened = { openQuizOnProfile = false }
                     )
                 }
                 composable("visitationForm")
@@ -379,7 +427,18 @@ class MainActivity : ComponentActivity() {
 
             }
 
-
+            if (showPreferencePrompt && loggedInUser != null && !loggedInIsAdmin) {
+                PreferenceQuizPrompt(
+                    onTakeQuiz = {
+                        showPreferencePrompt = false
+                        openQuizOnProfile = true
+                        navController.navigate("userProfile") {
+                            launchSingleTop = true
+                        }
+                    },
+                    onDismiss = { showPreferencePrompt = false }
+                )
+            }
         }
     }
 }

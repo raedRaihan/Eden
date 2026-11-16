@@ -47,11 +47,10 @@ fun AdminDashboard(navController: NavController) {
 
             Spacer(Modifier.height(12.dp))
             OutlinedButton(
-                onClick = { },
-                enabled = false,
+                onClick = { navController.navigate("manageUsers") },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Manage Users (Cloud Code required)")
+                Text("Manage Users")
             }
         }
     }
