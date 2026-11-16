@@ -325,7 +325,25 @@ class MainActivity : ComponentActivity() {
                 }
                 composable("accountSettings")
                 {
-                    AccountSettings(navController= navController)
+                    AccountSettings(
+                        navController = navController,
+                        user = loggedInUser,
+                        onUserUpdated = { updatedUser ->
+                            loggedInUser = updatedUser
+                            loggedInEmail = updatedUser.getProperty("email")
+                                ?.toString()
+                                .orEmpty()
+                            loggedInFirst = updatedUser.getProperty("first")
+                                ?.toString()
+                                .orEmpty()
+                            loggedInLast = updatedUser.getProperty("last")
+                                ?.toString()
+                                .orEmpty()
+                            loggedInName = listOf(loggedInFirst, loggedInLast)
+                                .filter { it.isNotBlank() }
+                                .joinToString(" ")
+                        }
+                    )
                 }
                 composable("adoptionApproval")
                 {
