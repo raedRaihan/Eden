@@ -141,14 +141,15 @@ fun UserProfile(
             }
 
             Spacer(Modifier.height(20.dp))
-            if (isAdmin) {
-                Button(
-                    onClick = { navController.navigate("adminDashboard") },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Admin Dashboard")
-                }
-            } else {
+            Button(
+                onClick = { navController.navigate("accountSettings") },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Account Settings")
+            }
+
+            if (!isAdmin) {
+                Spacer(Modifier.height(20.dp))
                 Text(
                     text = "Pet preferences",
                     style = MaterialTheme.typography.titleLarge

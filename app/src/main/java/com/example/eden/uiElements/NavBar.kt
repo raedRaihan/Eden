@@ -5,13 +5,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -73,11 +75,24 @@ fun LogOutButton(navController: NavController)
 //@Preview
 fun BottomBar(navController: NavController)
 {
+    val roleSpecificItem = if (MainActivity.loggedInIsAdmin) {
+        NavItem(
+            "Admin Dashboard",
+            "adminDashboard",
+            icon = Icons.Default.Star,
+        )
+    } else {
+        NavItem(
+            "Applications",
+            "adoptionApproval",
+            icon = Icons.AutoMirrored.Filled.List,
+        )
+    }
     val navItemList = listOf(
-        NavItem("Home","home",icon = Icons.Default.Home),
+        NavItem("Home", "home", icon = Icons.Default.Home),
         NavItem("Calendar", "calendar", icon = Icons.Default.DateRange),
         NavItem("My Profile", "userProfile", icon = Icons.Default.Person),
-        NavItem("Settings","accountSettings",  icon = Icons.Default.Settings)
+        roleSpecificItem,
     )
 
 
@@ -136,6 +151,19 @@ fun TopBar(navController: NavController)
     }
 
             NavigationBar(modifier = Modifier.statusBarsPadding()) {
+                if (navController.previousBackStackEntry != null) {
+                    NavigationBarItem(
+                        selected = false,
+                        onClick = { navController.popBackStack() },
+                        icon = {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back",
+                            )
+                        },
+                        label = { Text("Back") },
+                    )
+                }
 
                     NavigationBarItem(
                         selected = false,
