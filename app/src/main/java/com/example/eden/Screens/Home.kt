@@ -72,18 +72,20 @@ fun Home(navController: NavController, email: String) {
                 progress.indeterminateTintList = ColorStateList.valueOf(colors.primary.toArgb())
                 message.setTextColor(colors.onBackground.toArgb())
 
-                root.tag = true
+                // AndroidView.update may run more than once. The tag tracks whether
+                // this particular View instance has already been initialized.
+                root.tag = false
 
 
                 root
 
 
             },
-            update =  { view ->
+            update = { view ->
+                if (view.tag == true) return@AndroidView
+                view.tag = true
 
-                var resultsQueryOut = view.findViewById<LinearLayout>(R.id.resultsQueryHome)
-
-               // resultsQueryOut.removeAllViews()
+                val resultsQueryOut = view.findViewById<LinearLayout>(R.id.resultsQueryHome)
 
                 var inflater = LayoutInflater.from(resultsQueryOut.context)
 
@@ -94,7 +96,8 @@ fun Home(navController: NavController, email: String) {
 
                 fun loadPets(minAgeEntry: String, maxAgeEntry: String, chosenSpecies: String, chosenBreed: String, chosenSize: String,chosenGender: String)
                 {
-
+                    refresh.isEnabled = false
+                    resultsQueryOut.removeAllViews()
 
                     pc.searchForPet(name = "", minAge = minAgeEntry.toString(), maxAge = maxAgeEntry.toString(),
                         species = chosenSpecies, breed = chosenBreed, size = chosenSize,gender = chosenGender,
@@ -164,26 +167,33 @@ fun Home(navController: NavController, email: String) {
 
 
 
-                var minAgeEntry = null
-                var maxAgeEntry = null
+                var minAgeEntry: Int? = null
+                var maxAgeEntry: Int? = null
                 var chosenSpecies = "None"
                 var chosenBreed = "None"
                 var chosenSize = "None"
                 var chosenGender = "None"
 
-                loadPets(minAgeEntry = minAgeEntry.toString(), maxAgeEntry = maxAgeEntry.toString(),
-                    chosenSpecies = chosenSpecies, chosenBreed = chosenBreed, chosenSize = chosenSize,chosenGender = chosenGender)
+                loadPets(
+                    minAgeEntry = "",
+                    maxAgeEntry = "",
+                    chosenSpecies = chosenSpecies,
+                    chosenBreed = chosenBreed,
+                    chosenSize = chosenSize,
+                    chosenGender = chosenGender
+                )
 
 
 
-                refresh.setOnClickListener{
-
+                refresh.setOnClickListener {
+                    if (!refresh.isEnabled) return@setOnClickListener
+                    refresh.isEnabled = false
 
                     if(spinner.selectedItem.toString() == "All pets")
                     {
                         resultsQueryOut.removeAllViews()
                         chosenSpecies = "None"
-                        loadPets(minAgeEntry = minAgeEntry.toString(), maxAgeEntry = maxAgeEntry.toString(),
+                        loadPets(minAgeEntry = minAgeEntry?.toString().orEmpty(), maxAgeEntry = maxAgeEntry?.toString().orEmpty(),
                             chosenSpecies = chosenSpecies, chosenBreed = chosenBreed, chosenSize = chosenSize,chosenGender = chosenGender)
                         refresh.isEnabled=false
                     }
@@ -191,7 +201,7 @@ fun Home(navController: NavController, email: String) {
                     {
                         resultsQueryOut.removeAllViews()
                         chosenSpecies = "Dog"
-                        loadPets(minAgeEntry = minAgeEntry.toString(), maxAgeEntry = maxAgeEntry.toString(),
+                        loadPets(minAgeEntry = minAgeEntry?.toString().orEmpty(), maxAgeEntry = maxAgeEntry?.toString().orEmpty(),
                             chosenSpecies = chosenSpecies, chosenBreed = chosenBreed, chosenSize = chosenSize,chosenGender = chosenGender)
                         refresh.isEnabled=false
                     }
@@ -199,7 +209,7 @@ fun Home(navController: NavController, email: String) {
                     {
                         resultsQueryOut.removeAllViews()
                         chosenSpecies = "Cat"
-                        loadPets(minAgeEntry = minAgeEntry.toString(), maxAgeEntry = maxAgeEntry.toString(),
+                        loadPets(minAgeEntry = minAgeEntry?.toString().orEmpty(), maxAgeEntry = maxAgeEntry?.toString().orEmpty(),
                             chosenSpecies = chosenSpecies, chosenBreed = chosenBreed, chosenSize = chosenSize,chosenGender = chosenGender)
                         refresh.isEnabled=false
                     }
@@ -207,7 +217,7 @@ fun Home(navController: NavController, email: String) {
                     {
                         resultsQueryOut.removeAllViews()
                         chosenSpecies = "Rabbit"
-                        loadPets(minAgeEntry = minAgeEntry.toString(), maxAgeEntry = maxAgeEntry.toString(),
+                        loadPets(minAgeEntry = minAgeEntry?.toString().orEmpty(), maxAgeEntry = maxAgeEntry?.toString().orEmpty(),
                             chosenSpecies = chosenSpecies, chosenBreed = chosenBreed, chosenSize = chosenSize,chosenGender = chosenGender)
                         refresh.isEnabled=false
                     }
@@ -236,11 +246,13 @@ fun Home(navController: NavController, email: String) {
                                     }
                                     if(adopter["ageMaxPreference"] != null)
                                     {
-                                        maxAgeEntry = adopter["ageMaxPreference"] as Nothing?
+                                        maxAgeEntry =
+                                            (adopter["ageMaxPreference"] as? Number)?.toInt()
                                     }
                                     if(adopter["ageMinPreference"] != null)
                                     {
-                                        minAgeEntry = adopter["ageMinPreference"] as Nothing?
+                                        minAgeEntry =
+                                            (adopter["ageMinPreference"] as? Number)?.toInt()
                                     }
                                     if(adopter["sizePreference"] != null)
                                     {
@@ -248,7 +260,7 @@ fun Home(navController: NavController, email: String) {
                                     }
                                     resultsQueryOut.removeAllViews()
 
-                                    loadPets(minAgeEntry = minAgeEntry.toString(), maxAgeEntry = maxAgeEntry.toString(),
+                                    loadPets(minAgeEntry = minAgeEntry?.toString().orEmpty(), maxAgeEntry = maxAgeEntry?.toString().orEmpty(),
                                         chosenSpecies = chosenSpecies, chosenBreed = chosenBreed, chosenSize = chosenSize,chosenGender = chosenGender)
 
                                     refresh.isEnabled=false
@@ -267,7 +279,7 @@ fun Home(navController: NavController, email: String) {
                                 {
                                     resultsQueryOut.removeAllViews()
                                     chosenSpecies = "None"
-                                    loadPets(minAgeEntry = minAgeEntry.toString(), maxAgeEntry = maxAgeEntry.toString(),
+                                    loadPets(minAgeEntry = minAgeEntry?.toString().orEmpty(), maxAgeEntry = maxAgeEntry?.toString().orEmpty(),
                                         chosenSpecies = chosenSpecies, chosenBreed = chosenBreed, chosenSize = chosenSize,chosenGender = chosenGender)
                                     refresh.isEnabled=false
                                 }
@@ -275,8 +287,9 @@ fun Home(navController: NavController, email: String) {
 
 
                             },
-                            onError= {message -> Log.e("AdopterPreferencesController","Search faliure message: "+message)
-
+                            onError = { message ->
+                                Log.e("AdopterPreferencesController", "Search failure message: $message")
+                                refresh.isEnabled = true
                             }
                         )
                     }

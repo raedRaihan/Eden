@@ -1,20 +1,19 @@
 package com.example.eden.uiElements
 
 import android.util.Log
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -22,6 +21,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -53,6 +53,7 @@ fun LogOutButton(navController: NavController)
                     MainActivity.loggedInFirst = ""
                     MainActivity.loggedInLast = ""
                     MainActivity.loggedInAccountType = ""
+                    MainActivity.loggedInIsAdmin = false
                     MainActivity.loading = false
                     MainActivity.errorMessage = null
 
@@ -74,11 +75,24 @@ fun LogOutButton(navController: NavController)
 //@Preview
 fun BottomBar(navController: NavController)
 {
+    val roleSpecificItem = if (MainActivity.loggedInIsAdmin) {
+        NavItem(
+            "Admin Dashboard",
+            "adminDashboard",
+            icon = Icons.Default.Star,
+        )
+    } else {
+        NavItem(
+            "Applications",
+            "adoptionApproval",
+            icon = Icons.AutoMirrored.Filled.List,
+        )
+    }
     val navItemList = listOf(
-        NavItem("Home","home",icon = Icons.Default.Home),
+        NavItem("Home", "home", icon = Icons.Default.Home),
         NavItem("Calendar", "calendar", icon = Icons.Default.DateRange),
         NavItem("My Profile", "userProfile", icon = Icons.Default.Person),
-        NavItem("Settings","accountSettings",  icon = Icons.Default.Settings)
+        roleSpecificItem,
     )
 
 
@@ -108,42 +122,48 @@ fun BottomBar(navController: NavController)
 
 }
 
-var globalNotificationCount = 0
-
-fun countNotifications()
-{
-    val nc= notificationController()
-
-    var count = 0
-
-    nc.searchForNotifications(loggedInEmail,
-        onSuccess= {    response ->
-
-            for(notification in response)
-            {
-                if (notification["read"] == false && notification["active"] == true)
-                {
-                    count+=1
-                }
-
-            }
-            globalNotificationCount = count
-        },
-        onError= {message -> Log.e("Notifications","Search faliure message: "+message)})
-}
-
-
-
 @Composable
 //@Preview
 fun TopBar(navController: NavController)
 {
+    val backStackEntryState by navController.currentBackStackEntryAsState()
+    val currentRoute = backStackEntryState?.destination?.route
+    var notificationCount by remember(loggedInEmail) { mutableStateOf(0) }
 
-    var selectedIndex by remember{  mutableStateOf(-1)}
-    countNotifications()
+    LaunchedEffect(loggedInEmail, currentRoute) {
+        val email = loggedInEmail
+        if (email.isNullOrBlank()) {
+            notificationCount = 0
+            return@LaunchedEffect
+        }
 
+        notificationController().searchForNotifications(
+            email = email,
+            onSuccess = { response ->
+                notificationCount = response.count { notification ->
+                    notification["read"] == false && notification["active"] == true
+                }
+            },
+            onError = { message ->
+                Log.e("Notifications", "Count failure: $message")
+            },
+        )
+    }
 
             NavigationBar(modifier = Modifier.statusBarsPadding()) {
+                if (navController.previousBackStackEntry != null) {
+                    NavigationBarItem(
+                        selected = false,
+                        onClick = { navController.popBackStack() },
+                        icon = {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back",
+                            )
+                        },
+                        label = { Text("Back") },
+                    )
+                }
 
                     NavigationBarItem(
                         selected = false,
@@ -185,10 +205,14 @@ fun TopBar(navController: NavController)
                     },
                     icon = {
                         Icon(Icons.Default.Notifications, contentDescription = "Notifications")
-                        if(globalNotificationCount > 0)
+                        if(notificationCount > 0)
                         {
-                            Text(text = "+"+ globalNotificationCount.toString(), color = Color.Red, fontWeight = FontWeight.Bold, modifier = Modifier.align(
-                                Alignment.Top))
+                            Text(
+                                text = "+$notificationCount",
+                                color = Color.Red,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.align(Alignment.Top),
+                            )
                         }
 
 

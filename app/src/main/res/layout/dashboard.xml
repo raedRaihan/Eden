@@ -23,12 +23,29 @@
                 android:text="@string/dashboard_heading"
                 android:textSize="24sp"/>
 
-            <Spinner
-                android:id="@+id/speciesFilter"
+            <TextView
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:entries="@array/pet_species"
-                android:contentDescription="@string/species_filter" />
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="12dp"
+                android:text="@string/filter_type"
+                android:textStyle="bold" />
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/filter_dropdown_outline"
+                android:paddingHorizontal="8dp">
+
+                <Spinner
+                    android:id="@+id/speciesFilter"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:entries="@array/pet_species"
+                    android:contentDescription="@string/species_filter" />
+            </FrameLayout>
 
             <Button
                 android:id="@+id/refreshPets"

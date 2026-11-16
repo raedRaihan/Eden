@@ -22,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -31,11 +32,14 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.backendless.Backendless
 import com.backendless.BackendlessUser
+import com.backendless.async.callback.AsyncCallback
+import com.backendless.exceptions.BackendlessFault
 import com.example.eden.Screens.AccountSettings
+import com.example.eden.Screens.AdminDashboard
 import com.example.eden.Screens.AdoptionApproval
 import com.example.eden.Screens.AdoptionForm
 import com.example.eden.Screens.Calendar
-import com.example.eden.Screens.CreateAnimalProfile
+import com.example.eden.Screens.ManageAnimalProfiles
 import com.example.eden.Screens.CreateUserProfile
 import com.example.eden.Screens.Home
 import com.example.eden.ui.theme.EdenTheme
@@ -43,9 +47,11 @@ import com.example.eden.util.Constants.API_KEY
 import com.example.eden.util.Constants.APP_ID
 
 import com.example.eden.Screens.Login
+import com.example.eden.Screens.ManageUsers
 import com.example.eden.Screens.MedicalRecords
 import com.example.eden.Screens.Notifications
 import com.example.eden.Screens.PetProfile
+import com.example.eden.Screens.PreferenceQuizPrompt
 import com.example.eden.Screens.Preferences
 import com.example.eden.Screens.Search
 import com.example.eden.Screens.SearchResults
@@ -54,6 +60,7 @@ import com.example.eden.Screens.UserProfile
 import com.example.eden.Screens.VisitationForm
 import com.example.eden.authentication.googleLogin
 import com.example.eden.users.Adopter
+import com.example.eden.users.AdopterPreferencesController
 import com.example.eden.users.Users
 import com.example.eden.users.UsersController
 
@@ -71,6 +78,7 @@ class MainActivity : ComponentActivity() {
         var loggedInFirst by mutableStateOf("")
         var loggedInLast by mutableStateOf("")
         var loggedInAccountType by mutableStateOf("")
+        var loggedInIsAdmin by mutableStateOf(false)
         var loading by mutableStateOf(false)
         var errorMessage by mutableStateOf<String?>(null)
         var registrationMessage by mutableStateOf<String?>(null)
@@ -130,9 +138,34 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         // This is where the UI hierarchy starts
         setContent {
-
+            EdenTheme(dynamicColor = false) {
             // navigation
             val navController = rememberNavController()
+            var showPreferencePrompt by remember { mutableStateOf(false) }
+            var openQuizOnProfile by remember { mutableStateOf(false) }
+
+            fun checkPreferencePrompt(user: BackendlessUser) {
+                if (loggedInIsAdmin) {
+                    showPreferencePrompt = false
+                    return
+                }
+
+                AdopterPreferencesController().loadPreferences(
+                    user = user,
+                    onSuccess = { preferences ->
+                        if (loggedInUser?.objectId == user.objectId) {
+                            showPreferencePrompt = preferences == null
+                        }
+                    },
+                    onError = { error ->
+                        Log.w(
+                            "AdopterPreferences",
+                            "Could not check quiz completion: $error"
+                        )
+                    }
+                )
+            }
+
             NavHost(
                 navController = navController,
                 startDestination = if (skipLoginForDevelopment) "petProfile" else "login"
@@ -189,7 +222,39 @@ class MainActivity : ComponentActivity() {
                                                     loggedInName = listOf(loggedInFirst, loggedInLast)
                                                         .filter { it.isNotBlank() }
                                                         .joinToString(" ")
-                                                    loading = false
+
+                                                    Backendless.UserService.getUserRoles(
+                                                        object : AsyncCallback<List<String>> {
+                                                            override fun handleResponse(roles: List<String>) {
+                                                                runOnUiThread {
+                                                                    loggedInIsAdmin = roles.any {
+                                                                        it.equals("ADMIN", ignoreCase = true)
+                                                                    }
+                                                                    checkPreferencePrompt(user)
+                                                                    loggedInEmail = user.getProperty("email")
+                                                                        ?.toString()
+                                                                        .orEmpty()
+                                                                    loading = false
+                                                                }
+                                                            }
+
+                                                            override fun handleFault(fault: BackendlessFault) {
+                                                                runOnUiThread {
+                                                                    loggedInIsAdmin = loggedInAccountType
+                                                                        .equals("Admin", ignoreCase = true)
+                                                                    checkPreferencePrompt(user)
+                                                                    loggedInEmail = user.getProperty("email")
+                                                                        ?.toString()
+                                                                        .orEmpty()
+                                                                    loading = false
+                                                                    Log.w(
+                                                                        "BackendlessAuth",
+                                                                        "Could not retrieve user roles: ${fault.message}"
+                                                                    )
+                                                                }
+                                                            }
+                                                        }
+                                                    )
                                                 }
                                             },
                                             onError = { error ->
@@ -260,7 +325,25 @@ class MainActivity : ComponentActivity() {
                 }
                 composable("accountSettings")
                 {
-                    AccountSettings(navController= navController)
+                    AccountSettings(
+                        navController = navController,
+                        user = loggedInUser,
+                        onUserUpdated = { updatedUser ->
+                            loggedInUser = updatedUser
+                            loggedInEmail = updatedUser.getProperty("email")
+                                ?.toString()
+                                .orEmpty()
+                            loggedInFirst = updatedUser.getProperty("first")
+                                ?.toString()
+                                .orEmpty()
+                            loggedInLast = updatedUser.getProperty("last")
+                                ?.toString()
+                                .orEmpty()
+                            loggedInName = listOf(loggedInFirst, loggedInLast)
+                                .filter { it.isNotBlank() }
+                                .joinToString(" ")
+                        }
+                    )
                 }
                 composable("adoptionApproval")
                 {
@@ -274,9 +357,44 @@ class MainActivity : ComponentActivity() {
                 {
                     Calendar(navController= navController)
                 }
-                composable("createAnimalProfile")
+                composable("adminDashboard")
                 {
-                    CreateAnimalProfile(navController= navController)
+                    if (loggedInIsAdmin) {
+                        AdminDashboard(navController = navController)
+                    } else if (loggedInUser != null) {
+                        LaunchedEffect(Unit) {
+                            navController.navigate("home") {
+                                popUpTo("adminDashboard") { inclusive = true }
+                            }
+                        }
+                    }
+                }
+                composable("manageUsers")
+                {
+                    if (loggedInIsAdmin) {
+                        ManageUsers(
+                            navController = navController,
+                            currentUserId = loggedInUser?.objectId.orEmpty()
+                        )
+                    } else if (loggedInUser != null) {
+                        LaunchedEffect(Unit) {
+                            navController.navigate("home") {
+                                popUpTo("manageUsers") { inclusive = true }
+                            }
+                        }
+                    }
+                }
+                composable("manageAnimalProfiles")
+                {
+                    if (loggedInIsAdmin) {
+                        ManageAnimalProfiles(navController = navController)
+                    } else if (loggedInUser != null) {
+                        LaunchedEffect(Unit) {
+                            navController.navigate("home") {
+                                popUpTo("manageAnimalProfiles") { inclusive = true }
+                            }
+                        }
+                    }
                 }
                 composable("createUserProfile")
                 {
@@ -306,7 +424,10 @@ class MainActivity : ComponentActivity() {
                         last = loggedInLast,
                         email = loggedInEmail.orEmpty(),
                         accountType = loggedInAccountType,
-                        backendlessUser = loggedInUser
+                        isAdmin = loggedInIsAdmin,
+                        backendlessUser = loggedInUser,
+                        openQuizOnEntry = openQuizOnProfile,
+                        onQuizOpened = { openQuizOnProfile = false }
                     )
                 }
                 composable("visitationForm")
@@ -324,7 +445,19 @@ class MainActivity : ComponentActivity() {
 
             }
 
-
+            if (showPreferencePrompt && loggedInUser != null && !loggedInIsAdmin) {
+                PreferenceQuizPrompt(
+                    onTakeQuiz = {
+                        showPreferencePrompt = false
+                        openQuizOnProfile = true
+                        navController.navigate("userProfile") {
+                            launchSingleTop = true
+                        }
+                    },
+                    onDismiss = { showPreferencePrompt = false }
+                )
+            }
+            }
         }
     }
 }

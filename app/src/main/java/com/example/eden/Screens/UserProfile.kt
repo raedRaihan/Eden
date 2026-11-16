@@ -1,5 +1,6 @@
 package com.example.eden.Screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -22,6 +23,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,14 +47,42 @@ fun UserProfile(
     last: String,
     email: String,
     accountType: String,
-    backendlessUser: BackendlessUser?
+    isAdmin: Boolean,
+    backendlessUser: BackendlessUser?,
+    openQuizOnEntry: Boolean,
+    onQuizOpened: () -> Unit
 ) {
     var showQuiz by remember { mutableStateOf(false) }
     var options by remember { mutableStateOf<PetFilterOptions?>(null) }
     var optionsError by remember { mutableStateOf<String?>(null) }
     var loadingOptions by remember { mutableStateOf(false) }
     var saveMessage by remember { mutableStateOf<String?>(null) }
+    var savedPreferences by remember { mutableStateOf<AdopterPreferences?>(null) }
+    var preferencesLoading by remember { mutableStateOf(!isAdmin) }
+    var preferencesError by remember { mutableStateOf<String?>(null) }
     val preferencesController = remember { AdopterPreferencesController() }
+
+    fun reloadPreferences() {
+        val user = backendlessUser
+        if (isAdmin || user == null) {
+            preferencesLoading = false
+            return
+        }
+
+        preferencesLoading = true
+        preferencesError = null
+        preferencesController.loadPreferences(
+            user = user,
+            onSuccess = {
+                savedPreferences = it
+                preferencesLoading = false
+            },
+            onError = {
+                preferencesError = it
+                preferencesLoading = false
+            }
+        )
+    }
 
     fun openQuiz() {
         showQuiz = true
@@ -71,6 +101,17 @@ fun UserProfile(
         )
     }
 
+    LaunchedEffect(backendlessUser?.objectId, isAdmin) {
+        reloadPreferences()
+    }
+
+    LaunchedEffect(openQuizOnEntry) {
+        if (openQuizOnEntry && !isAdmin) {
+            openQuiz()
+            onQuizOpened()
+        }
+    }
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = { TopBar(navController) },
@@ -80,8 +121,9 @@ fun UserProfile(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(24.dp),
-            verticalArrangement = Arrangement.Center
+                .padding(24.dp)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.Top
         ) {
             Text(
                 text = "My Profile",
@@ -100,10 +142,80 @@ fun UserProfile(
 
             Spacer(Modifier.height(20.dp))
             Button(
-                onClick = ::openQuiz,
+                onClick = { navController.navigate("accountSettings") },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Pet filtering quiz")
+                Text("Account Settings")
+            }
+
+            if (!isAdmin) {
+                Spacer(Modifier.height(20.dp))
+                Text(
+                    text = "Pet preferences",
+                    style = MaterialTheme.typography.titleLarge
+                )
+                Spacer(Modifier.height(12.dp))
+
+                when {
+                    preferencesLoading -> CircularProgressIndicator()
+                    preferencesError != null -> {
+                        Text(
+                            preferencesError!!,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                        TextButton(onClick = ::reloadPreferences) {
+                            Text("Try again")
+                        }
+                    }
+                    savedPreferences != null -> {
+                        val preferences = savedPreferences!!
+                        Text(
+                            "Tap any value to edit your preferences.",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        PreferenceProfileField(
+                            "Minimum age",
+                            preferences.ageMinPreference?.let { "$it months" },
+                            onClick = ::openQuiz
+                        )
+                        PreferenceProfileField(
+                            "Maximum age",
+                            preferences.ageMaxPreference?.let { "$it months" },
+                            onClick = ::openQuiz
+                        )
+                        PreferenceProfileField(
+                            "Species",
+                            preferences.speciesPreference,
+                            onClick = ::openQuiz
+                        )
+                        PreferenceProfileField(
+                            "Breed",
+                            preferences.breedPreference,
+                            onClick = ::openQuiz
+                        )
+                        PreferenceProfileField(
+                            "Size",
+                            preferences.sizePreference,
+                            onClick = ::openQuiz
+                        )
+                        PreferenceProfileField(
+                            "Gender",
+                            preferences.genderPreference,
+                            onClick = ::openQuiz
+                        )
+                    }
+                    else -> {
+                        Text("You have not taken the pet filtering quiz.")
+                        Spacer(Modifier.height(12.dp))
+                        Button(
+                            onClick = ::openQuiz,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Take pet filtering quiz")
+                        }
+                    }
+                }
             }
         }
     }
@@ -114,10 +226,12 @@ fun UserProfile(
             loadingOptions = loadingOptions,
             optionsError = optionsError,
             backendlessUser = backendlessUser,
+            initialPreferences = savedPreferences,
             controller = preferencesController,
             onSaved = {
                 saveMessage = "Pet preferences saved."
                 showQuiz = false
+                reloadPreferences()
             },
             onDismiss = { showQuiz = false }
         )
@@ -130,16 +244,29 @@ private fun PetFilteringQuizDialog(
     loadingOptions: Boolean,
     optionsError: String?,
     backendlessUser: BackendlessUser?,
+    initialPreferences: AdopterPreferences?,
     controller: AdopterPreferencesController,
     onSaved: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    var minAge by remember { mutableStateOf("") }
-    var maxAge by remember { mutableStateOf("") }
-    var species by remember { mutableStateOf<String?>(null) }
-    var breed by remember { mutableStateOf<String?>(null) }
-    var size by remember { mutableStateOf<String?>(null) }
-    var gender by remember { mutableStateOf<String?>(null) }
+    var minAge by remember(initialPreferences) {
+        mutableStateOf(initialPreferences?.ageMinPreference?.toString().orEmpty())
+    }
+    var maxAge by remember(initialPreferences) {
+        mutableStateOf(initialPreferences?.ageMaxPreference?.toString().orEmpty())
+    }
+    var species by remember(initialPreferences) {
+        mutableStateOf(initialPreferences?.speciesPreference)
+    }
+    var breed by remember(initialPreferences) {
+        mutableStateOf(initialPreferences?.breedPreference)
+    }
+    var size by remember(initialPreferences) {
+        mutableStateOf(initialPreferences?.sizePreference)
+    }
+    var gender by remember(initialPreferences) {
+        mutableStateOf(initialPreferences?.genderPreference)
+    }
     var saving by remember { mutableStateOf(false) }
     var validationError by remember { mutableStateOf<String?>(null) }
 
@@ -285,7 +412,7 @@ private fun PreferenceQuestion(
             onClick = { onSelected(null) },
             label = { Text("Skip") }
         )
-        choices.forEach { choice ->
+        (choices + listOfNotNull(selected)).distinct().forEach { choice ->
             FilterChip(
                 selected = selected == choice,
                 onClick = { onSelected(choice) },
@@ -293,6 +420,22 @@ private fun PreferenceQuestion(
             )
         }
     }
+}
+
+@Composable
+private fun PreferenceProfileField(
+    label: String,
+    value: String?,
+    onClick: () -> Unit
+) {
+    Text(text = label, style = MaterialTheme.typography.labelLarge)
+    Text(
+        text = value?.takeIf { it.isNotBlank() } ?: "No preference",
+        style = MaterialTheme.typography.bodyLarge,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.clickable(onClick = onClick)
+    )
+    Spacer(Modifier.height(12.dp))
 }
 
 @Composable

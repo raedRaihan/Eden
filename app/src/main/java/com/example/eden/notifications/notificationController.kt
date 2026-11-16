@@ -43,14 +43,13 @@ class notificationController {
     fun removeNotificationOrSetRead(objectId: String?, changeReadValue: Boolean, onSuccess: (Map<*, *>) -> Unit)
     {
 
-        var searchQuery = hashMapOf<String, Any>(("objectId" to objectId) as Pair<String, Any>, "active" to false)
-        if(changeReadValue)
-        {
-            searchQuery = hashMapOf<String, Any>(("objectId" to objectId) as Pair<String, Any>, "read" to true)
-        }
+        val notificationUpdate = mutableMapOf<Any?, Any?>(
+            "objectId" to objectId,
+            (if (changeReadValue) "read" else "active") to changeReadValue,
+        )
 
         Backendless.Data.of("Notification").save(
-            searchQuery,
+            notificationUpdate,
             object : AsyncCallback<Map<*, *>> {
                 override fun handleResponse(response: Map<*, *>) {
 
@@ -70,9 +69,13 @@ class notificationController {
         )
     }
 
-    fun addNotification(email: String?, Newmessage: String?)
-    {
-        val newNotification = Notification(active = true, message = Newmessage, read = false)
+    fun addNotification(
+        email: String?,
+        message: String?,
+        onSuccess: () -> Unit = {},
+        onError: (String) -> Unit = {},
+    ) {
+        val newNotification = Notification(active = true, message = message, read = false)
 
         Backendless.Data.of(Notification::class.java).save(
             newNotification,
@@ -84,11 +87,14 @@ class notificationController {
                         object : AsyncCallback<Int> {
 
                             override fun handleResponse(response: Int?) {
-
+                                onSuccess()
                             }
 
                             override fun handleFault(fault: BackendlessFault?) {
-
+                                val message = fault?.message
+                                    ?: "Could not associate the notification with the user."
+                                Log.e("notificationController", message)
+                                onError(message)
                             }
                         })
                     Log.d("notificationController","Notification added!")
@@ -97,7 +103,9 @@ class notificationController {
                 }
 
                 override fun handleFault(fault: BackendlessFault?) {
-                    Log.e("notificationController","Error: "+ "${fault?.message}")
+                    val message = fault?.message ?: "Could not create the notification."
+                    Log.e("notificationController", message)
+                    onError(message)
                 }
             }
         )
