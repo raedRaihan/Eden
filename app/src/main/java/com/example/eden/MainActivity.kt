@@ -39,7 +39,7 @@ import com.example.eden.Screens.AdminDashboard
 import com.example.eden.Screens.AdoptionApproval
 import com.example.eden.Screens.AdoptionForm
 import com.example.eden.Screens.Calendar
-import com.example.eden.Screens.CreateAnimalProfile
+import com.example.eden.Screens.ManageAnimalProfiles
 import com.example.eden.Screens.CreateUserProfile
 import com.example.eden.Screens.Home
 import com.example.eden.ui.theme.EdenTheme
@@ -138,7 +138,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         // This is where the UI hierarchy starts
         setContent {
-
+            EdenTheme(dynamicColor = false) {
             // navigation
             val navController = rememberNavController()
             var showPreferencePrompt by remember { mutableStateOf(false) }
@@ -343,7 +343,7 @@ class MainActivity : ComponentActivity() {
                 {
                     if (loggedInIsAdmin) {
                         AdminDashboard(navController = navController)
-                    } else {
+                    } else if (loggedInUser != null) {
                         LaunchedEffect(Unit) {
                             navController.navigate("home") {
                                 popUpTo("adminDashboard") { inclusive = true }
@@ -358,7 +358,7 @@ class MainActivity : ComponentActivity() {
                             navController = navController,
                             currentUserId = loggedInUser?.objectId.orEmpty()
                         )
-                    } else {
+                    } else if (loggedInUser != null) {
                         LaunchedEffect(Unit) {
                             navController.navigate("home") {
                                 popUpTo("manageUsers") { inclusive = true }
@@ -366,14 +366,14 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 }
-                composable("createAnimalProfile")
+                composable("manageAnimalProfiles")
                 {
                     if (loggedInIsAdmin) {
-                        CreateAnimalProfile(navController = navController)
-                    } else {
+                        ManageAnimalProfiles(navController = navController)
+                    } else if (loggedInUser != null) {
                         LaunchedEffect(Unit) {
                             navController.navigate("home") {
-                                popUpTo("createAnimalProfile") { inclusive = true }
+                                popUpTo("manageAnimalProfiles") { inclusive = true }
                             }
                         }
                     }
@@ -438,6 +438,7 @@ class MainActivity : ComponentActivity() {
                     },
                     onDismiss = { showPreferencePrompt = false }
                 )
+            }
             }
         }
     }

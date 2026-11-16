@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,14 +38,14 @@ fun AdminDashboard(navController: NavController) {
             Spacer(Modifier.height(24.dp))
 
             Button(
-                onClick = { navController.navigate("createAnimalProfile") },
+                onClick = { navController.navigate("manageAnimalProfiles") },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Create Animal Profile")
+                Text("Manage Pet Profiles")
             }
 
             Spacer(Modifier.height(12.dp))
-            OutlinedButton(
+            Button(
                 onClick = { navController.navigate("manageUsers") },
                 modifier = Modifier.fillMaxWidth()
             ) {
