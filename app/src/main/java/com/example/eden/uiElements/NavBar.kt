@@ -1,5 +1,9 @@
 package com.example.eden.uiElements
 
+import android.util.Log
+import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -22,11 +26,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.eden.MainActivity
-
+import com.example.eden.MainActivity.Companion.loggedInEmail
+import com.example.eden.R
+import com.example.eden.notifications.notificationController
+import kotlin.collections.get
 
 
 fun LogOutButton(navController: NavController)
@@ -99,8 +109,29 @@ fun BottomBar(navController: NavController)
 
 }
 
+var globalNotificationCount = 0
 
+fun countNotifications()
+{
+    val nc= notificationController()
 
+    var count = 0
+
+    nc.searchForNotifications(loggedInEmail,
+        onSuccess= {    response ->
+
+            for(notification in response)
+            {
+                if (notification["read"] == false && notification["active"] == true)
+                {
+                    count+=1
+                }
+
+            }
+            globalNotificationCount = count
+        },
+        onError= {message -> Log.e("Notifications","Search faliure message: "+message)})
+}
 
 
 
@@ -108,7 +139,9 @@ fun BottomBar(navController: NavController)
 //@Preview
 fun TopBar(navController: NavController)
 {
+
     var selectedIndex by remember{  mutableStateOf(-1)}
+    countNotifications()
 
 
             NavigationBar(modifier = Modifier.statusBarsPadding()) {
@@ -153,6 +186,12 @@ fun TopBar(navController: NavController)
                     },
                     icon = {
                         Icon(Icons.Default.Notifications, contentDescription = "Notifications")
+                        if(globalNotificationCount > 0)
+                        {
+                            Text(text = "+"+ globalNotificationCount.toString(), color = Color.Red, fontWeight = FontWeight.Bold, modifier = Modifier.align(
+                                Alignment.Top))
+                        }
+
 
                     },
                     label = {Text("Notifications")}

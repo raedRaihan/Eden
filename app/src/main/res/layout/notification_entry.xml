@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+android:id="@+id/notificationFrame"
+android:layout_width="fill_parent"
+android:layout_height="match_parent"
+android:orientation="horizontal"
+android:background="@drawable/animal_frame_and_background"
+    >
+
+
+<ImageView
+    android:id="@+id/newNotificationIcon"
+    android:layout_width="50dp"
+    android:layout_height="50dp"
+    android:padding="10dp"
+    android:src="@drawable/blue_star"
+    android:gravity="center_vertical"
+    android:scaleType="centerCrop" />
+
+<TextView
+    android:id="@+id/notificationText"
+    android:layout_width="0dp"
+    android:layout_height="match_parent"
+    android:layout_weight="1"
+    android:gravity="center_vertical"
+    android:textColor="#000000"
+    android:paddingBottom="10dp"
+    android:text="Test Notifcation 2nd: " />
+
+<ImageView
+    android:id="@+id/removeNotification"
+    android:layout_width="50dp"
+    android:layout_height="50dp"
+    android:padding="10dp"
+    android:src="@drawable/x_letter"
+    android:gravity="center_vertical"
+    android:scaleType="centerCrop" />
+
+
+</LinearLayout>
