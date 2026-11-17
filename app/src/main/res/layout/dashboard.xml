@@ -15,14 +15,6 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             >
-            <TextView
-                android:id="@+id/dashboardHeading"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:gravity="center"
-                android:text="@string/dashboard_heading"
-                android:textSize="24sp"/>
-
             <Spinner
                 android:id="@+id/speciesFilter"
                 android:layout_width="match_parent"

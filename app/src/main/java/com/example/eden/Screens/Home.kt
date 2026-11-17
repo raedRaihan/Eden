@@ -1,5 +1,6 @@
 package com.example.eden.Screens
 
+import androidx.compose.ui.res.stringResource
 import android.content.res.ColorStateList
 import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
@@ -33,7 +34,7 @@ fun Home(navController: NavController, email: String) {
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        topBar = { TopBar(navController) },
+        topBar = { TopBar(navController, stringResource(R.string.dashboard_heading)) },
         bottomBar = { BottomBar(navController) }
     ) { innerPadding ->
         AndroidView(
@@ -45,7 +46,6 @@ fun Home(navController: NavController, email: String) {
                 )
                 val inflater = LayoutInflater.from(themedContext)
                 val root = inflater.inflate(R.layout.dashboard, null, false)
-                val heading = root.findViewById<TextView>(R.id.dashboardHeading)
                 val filter = root.findViewById<Spinner>(R.id.speciesFilter)
                 val refresh = root.findViewById<Button>(R.id.refreshPets)
                 val progress = root.findViewById<ProgressBar>(R.id.petsLoading)
@@ -55,8 +55,6 @@ fun Home(navController: NavController, email: String) {
                 val accent = 0xFF213D6C.toInt()
 
                 root.setBackgroundColor(colors.background.toArgb())
-                heading.setBackgroundColor(accent)
-                heading.setTextColor(colors.onPrimary.toArgb())
                 filter.backgroundTintList = ColorStateList.valueOf(accent)
                 refresh.backgroundTintList = ColorStateList.valueOf(accent)
                 refresh.setTextColor(colors.onPrimary.toArgb())

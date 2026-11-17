@@ -1,6 +1,17 @@
 package com.example.eden.uiElements
 
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
@@ -105,9 +116,8 @@ fun BottomBar(navController: NavController)
 
 @Composable
 //@Preview
-fun TopBar(navController: NavController)
-{
-    var selectedIndex by remember{  mutableStateOf(-1)}
+fun TopBar(navController: NavController, title: String? = null) {
+    Column {
 
 
             NavigationBar(modifier = Modifier.statusBarsPadding()) {
@@ -159,4 +169,22 @@ fun TopBar(navController: NavController)
 
             }
 
+        if (title != null) {
+            Box(
+                modifier = Modifier.fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.primary)
+                    .heightIn(min = 56.dp)
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = title,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontSize = 24.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.semantics { heading() }
+                )
+            }
+        }
+    }
 }

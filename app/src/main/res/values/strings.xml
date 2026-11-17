@@ -52,4 +52,21 @@
     <string name="adoption_status">Status: %1$s</string>
     <string name="adoption_unavailable">This pet is not currently available for adoption.</string>
     <string name="pets_no_preferences_matches">No available pets match your preferences.</string>
+    <string name="calendar_visits">Visitation appointments</string>
+    <string name="calendar_sign_in">Sign in to see your appointments.</string>
+    <string name="calendar_all_dates">All dates</string>
+    <string name="calendar_refresh">Refresh</string>
+    <string name="calendar_selected_day">Visits on %1$s</string>
+    <string name="calendar_load_failed">Could not load your appointments. Tap Retry to try again.</string>
+    <string name="calendar_no_visits">You have no visitation appointments.</string>
+    <string name="calendar_no_day_visits">No visitation appointments on this date.</string>
+    <string name="calendar_upcoming">Upcoming visits</string>
+    <string name="calendar_past">Past visits</string>
+    <string name="calendar_visit_date_time">%1$s at %2$s</string>
+    <string name="calendar_visit_status">Status: %1$s</string>
+    <string name="calendar_previous_month">Previous month</string>
+    <string name="calendar_next_month">Next month</string>
+    <string name="calendar_date_has_visit">%1$s, has a visitation appointment</string>
+    <string name="screen_my_profile">My Profile</string>
+    <string name="screen_settings">Account Settings</string>
 </resources>

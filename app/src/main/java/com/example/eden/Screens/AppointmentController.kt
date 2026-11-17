@@ -12,6 +12,66 @@ import java.util.Date
 
 class AppointmentController {
 
+    internal fun loadCalendarVisits(
+        userId: String,
+        onSuccess: (List<CalendarVisit>) -> Unit,
+        onError: () -> Unit
+    ) {
+        if (userId.isBlank()) {
+            onError()
+            return
+        }
+
+        val escapedUserId = userId.replace("'", "''")
+        val visits = mutableListOf<CalendarVisit>()
+        val pageSize = 100
+
+        fun loadPage(offset: Int) {
+            val query = DataQueryBuilder.create()
+                .setWhereClause("userId.objectId = '$escapedUserId' AND appointmentType = 'VISITATION'")
+                .setRelated("animal")
+                .setSortBy("appointmentDate", "objectId")
+                .setPageSize(pageSize)
+                .setOffset(offset)
+
+            Backendless.Data.of("Appointment").find(
+                query,
+                object : AsyncCallback<List<Map<*, *>>> {
+                    override fun handleResponse(response: List<Map<*, *>>) {
+                        for (record in response) {
+                            val timeMillis = when (val date = record["appointmentDate"]) {
+                                is Date -> date.time
+                                is Number -> date.toLong()
+                                else -> continue
+                            }
+                            val animal = record["animal"] as? Map<*, *>
+                            visits.add(
+                                CalendarVisit(
+                                    timeMillis,
+                                    animal?.get("name") as? String,
+                                    record["requestStatus"]?.toString().orEmpty()
+                                )
+                            )
+                        }
+
+                        if (response.size == pageSize) {
+                            loadPage(offset + response.size)
+                        } else {
+                            onSuccess(visits.toList())
+                        }
+                    }
+
+                    override fun handleFault(fault: BackendlessFault) {
+                        Log.e("AppointmentController", "Could not load calendar visits: ${fault.message}")
+                        onError()
+                    }
+                }
+            )
+        }
+
+        loadPage(0)
+    }
+
     fun findVisitAppointment(
         userId: String,
         petId: String,
