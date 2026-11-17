@@ -46,7 +46,10 @@ fun PetProfile(navController: NavController,  chosenPet: HashMap<*, *>)
 
                 val imageView = view.findViewById<ImageView>(R.id.petProfileImage)
 
-                Glide.with(newContext).load(chosenPet["image"]).into(imageView)
+                Glide.with(view).load(chosenPet["image"]?.toString()?.trim())
+                    .fallback(android.R.drawable.ic_menu_gallery)
+                    .error(android.R.drawable.ic_menu_gallery)
+                    .into(imageView)
 
                 var petName=view.findViewById<TextView>(R.id.petProfileName)
 
@@ -80,7 +83,7 @@ fun PetProfile(navController: NavController,  chosenPet: HashMap<*, *>)
 
                 petAge.text = buildString {
                     append("Age: ")
-                    append(( (chosenPet["ageMonths"].toString()) ?: "Unknown") as CharSequence?)
+                    append(chosenPet["ageMonths"]?.toString() ?: "Unknown")
                     append(" months")
                 }
 
@@ -112,7 +115,6 @@ fun PetProfile(navController: NavController,  chosenPet: HashMap<*, *>)
 
                 if(chosenPet["status"] != "Available")
                 {
-                    adoptionButton.isEnabled = false
                     visitButton.isEnabled = false
                     petAvailability.setTextColor(Color.parseColor("#8a0c03"))
                 }

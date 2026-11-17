@@ -1,5 +1,7 @@
 package com.example.eden.Screens
 
+import com.example.eden.R
+import androidx.compose.ui.res.stringResource
 import android.util.Patterns
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -131,7 +133,7 @@ fun AccountSettings(
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        topBar = { TopBar(navController) },
+        topBar = { TopBar(navController, stringResource(R.string.screen_settings)) },
         bottomBar = { BottomBar(navController) }
     ) { innerPadding ->
         Column(
@@ -142,7 +144,6 @@ fun AccountSettings(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text("Account Settings", style = MaterialTheme.typography.headlineMedium)
             Text("Profile information", style = MaterialTheme.typography.titleLarge)
 
             OutlinedTextField(

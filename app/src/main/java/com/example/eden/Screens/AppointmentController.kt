@@ -12,6 +12,66 @@ import java.util.Date
 
 class AppointmentController {
 
+    internal fun loadCalendarVisits(
+        userId: String,
+        onSuccess: (List<CalendarVisit>) -> Unit,
+        onError: () -> Unit
+    ) {
+        if (userId.isBlank()) {
+            onError()
+            return
+        }
+
+        val escapedUserId = userId.replace("'", "''")
+        val visits = mutableListOf<CalendarVisit>()
+        val pageSize = 100
+
+        fun loadPage(offset: Int) {
+            val query = DataQueryBuilder.create()
+                .setWhereClause("userId.objectId = '$escapedUserId' AND appointmentType = 'VISITATION'")
+                .setRelated("animal")
+                .setSortBy("appointmentDate", "objectId")
+                .setPageSize(pageSize)
+                .setOffset(offset)
+
+            Backendless.Data.of("Appointment").find(
+                query,
+                object : AsyncCallback<List<Map<*, *>>> {
+                    override fun handleResponse(response: List<Map<*, *>>) {
+                        for (record in response) {
+                            val timeMillis = when (val date = record["appointmentDate"]) {
+                                is Date -> date.time
+                                is Number -> date.toLong()
+                                else -> continue
+                            }
+                            val animal = record["animal"] as? Map<*, *>
+                            visits.add(
+                                CalendarVisit(
+                                    timeMillis,
+                                    animal?.get("name") as? String,
+                                    record["requestStatus"]?.toString().orEmpty()
+                                )
+                            )
+                        }
+
+                        if (response.size == pageSize) {
+                            loadPage(offset + response.size)
+                        } else {
+                            onSuccess(visits.toList())
+                        }
+                    }
+
+                    override fun handleFault(fault: BackendlessFault) {
+                        Log.e("AppointmentController", "Could not load calendar visits: ${fault.message}")
+                        onError()
+                    }
+                }
+            )
+        }
+
+        loadPage(0)
+    }
+
     fun findVisitAppointment(
         userId: String,
         petId: String,
@@ -138,6 +198,123 @@ class AppointmentController {
             }
         })
     }
+
+    fun submitAdoption(
+        requestId: String,
+        petId: String,
+        userId: String,
+        notes: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val applicationText = notes.trim()
+
+        if (requestId.isBlank() || petId.isBlank() || userId.isBlank()) {
+            onError("Sign in and select a pet before applying.")
+            return
+        }
+
+        if (applicationText.isBlank() || applicationText.length > 500) {
+            onError("Write an application between 1 and 500 characters.")
+            return
+        }
+
+        val transaction = UnitOfWork()
+
+        transaction.upsert(
+            "Appointment",
+            mapOf(
+                "objectId" to requestId,
+                "appointmentType" to "ADOPTION",
+                "requestStatus" to "PENDING",
+                "notes" to applicationText
+            )
+        )
+
+        transaction.setRelation(
+            "Appointment", requestId, "animal", arrayOf(petId)
+        )
+
+        transaction.setRelation(
+            "Appointment", requestId, "userId", arrayOf(userId)
+        )
+
+        transaction.execute(
+            object : AsyncCallback<UnitOfWorkResult> {
+                override fun handleResponse(response: UnitOfWorkResult) {
+                    if (response.isSuccess) {
+                        onSuccess()
+                    } else {
+                        onError("Could not save your application. Please try again.")
+                    }
+                }
+
+                override fun handleFault(fault: BackendlessFault) {
+                    onError(
+                        fault.message ?: "Could not submit your application."
+                    )
+                }
+            }
+        )
+    }
+
+    fun findAdoptionApplication(
+        userId: String,
+        petId: String,
+        onSuccess: (AdoptionApplication?) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        if (userId.isBlank() || petId.isBlank()) {
+            onError("Sign in and select a pet first.")
+            return
+        }
+
+        val query = DataQueryBuilder.create()
+            .setWhereClause(
+                "userId.objectId = '$userId' AND " +
+                        "animal.objectId = '$petId' AND " +
+                        "appointmentType = 'ADOPTION'"
+            )
+            .setSortBy("created", "objectId")
+            .setPageSize(1)
+
+        Backendless.Data.of("Appointment").find(
+            query,
+            object : AsyncCallback<List<Map<*, *>>> {
+                override fun handleResponse(response: List<Map<*, *>>) {
+                    val record = response.firstOrNull()
+
+                    if (record == null) {
+                        onSuccess(null)
+                        return
+                    }
+
+                    val objectId = record["objectId"]?.toString()
+
+                    if (objectId.isNullOrBlank()) {
+                        onError("The application is missing its ID.")
+                        return
+                    }
+
+                    val application = AdoptionApplication(
+                        objectId = objectId,
+                        requestStatus = record["requestStatus"]
+                            ?.toString().orEmpty(),
+                        notes = record["notes"]?.toString().orEmpty()
+                    )
+
+                    onSuccess(application)
+                }
+
+                override fun handleFault(fault: BackendlessFault) {
+                    onError(
+                        fault.message ?: "Could not load your application."
+                    )
+                }
+            }
+        )
+    }
+
     fun cancelVisit(
         appointmentId: String,
         onSuccess: () -> Unit,

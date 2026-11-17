@@ -1,5 +1,7 @@
 package com.example.eden.Screens
 
+import com.example.eden.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -114,7 +116,7 @@ fun UserProfile(
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        topBar = { TopBar(navController) },
+        topBar = { TopBar(navController, stringResource(R.string.screen_my_profile)) },
         bottomBar = { BottomBar(navController) }
     ) { innerPadding ->
         Column(
@@ -125,11 +127,6 @@ fun UserProfile(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.Top
         ) {
-            Text(
-                text = "My Profile",
-                style = MaterialTheme.typography.headlineMedium
-            )
-            Spacer(Modifier.height(24.dp))
             ProfileField("First name", first)
             ProfileField("Last name", last)
             ProfileField("Email", email)

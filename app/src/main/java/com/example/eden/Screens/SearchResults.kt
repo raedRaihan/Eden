@@ -60,7 +60,10 @@ fun SearchResults(navController: NavController, queryResults:List<Map<*, *>>)
 
                     val imageView=box.findViewById<ImageView>(R.id.animalPicture)
 
-                    Glide.with(view).load(pet["image"]).into(imageView)
+                    Glide.with(view).load(pet["image"]?.toString()?.trim())
+                        .fallback(android.R.drawable.ic_menu_gallery)
+                        .error(android.R.drawable.ic_menu_gallery)
+                        .into(imageView)
 
                     box.findViewById<TextView>(R.id.animalSpecies).text = buildString {
                         append("Species: ")
@@ -90,7 +93,7 @@ fun SearchResults(navController: NavController, queryResults:List<Map<*, *>>)
 
 
                     box.setOnClickListener {
-                        chosenPetGlobal = pet as HashMap<*, *>
+                        chosenPetGlobal = HashMap(pet)
                         navController.navigate("petProfile")
                     }
 

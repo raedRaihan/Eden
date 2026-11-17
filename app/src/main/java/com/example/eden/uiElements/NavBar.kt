@@ -1,5 +1,17 @@
 package com.example.eden.uiElements
 
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.heading
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.background
 import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -124,7 +136,7 @@ fun BottomBar(navController: NavController)
 
 @Composable
 //@Preview
-fun TopBar(navController: NavController)
+fun TopBar(navController: NavController, title: String? = null)
 {
     val backStackEntryState by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntryState?.destination?.route
@@ -150,6 +162,7 @@ fun TopBar(navController: NavController)
         )
     }
 
+    Column {
             NavigationBar(modifier = Modifier.statusBarsPadding()) {
                 if (navController.previousBackStackEntry != null) {
                     NavigationBarItem(
@@ -222,4 +235,22 @@ fun TopBar(navController: NavController)
 
             }
 
+        if (title != null) {
+            Box(
+                modifier = Modifier.fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.primary)
+                    .heightIn(min = 56.dp)
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = title,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontSize = 24.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.semantics { heading() }
+                )
+            }
+        }
+    }
 }

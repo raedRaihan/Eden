@@ -9,5 +9,6 @@ data class Pet(
     val status: String,
     val ageMonths: Double,
     val description: String,
-    val objectId: String? = null
+    val objectId: String? = null,
+    val record: Map<*, *> = emptyMap<Any, Any>()
 )

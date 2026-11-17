@@ -32,13 +32,14 @@ class PetController {
                             Pet(
                                 record["name"]?.toString() ?: "Unnamed pet",
                                 record["species"]?.toString() ?: "Unknown species",
-                                record["breed"].toString(),
-                                record["gender"]?.toString(),
-                                record["image"].toString(),
-                                record["status"].toString(),
-                                record["ageMonths"].toString().toDouble(),
+                                breed = breed,
+                                gender = record["gender"]?.toString(),
+                                image = record["image"]?.toString().orEmpty(),
+                                status = record["status"]?.toString().orEmpty(),
+                                ageMonths = (record["ageMonths"] as? Number)?.toDouble() ?: 0.0,
                                 description = description,
-                                objectId = record["objectId"]?.toString()
+                                objectId = record["objectId"]?.toString(),
+                                record = record.toMap()
                             )
                         }
                         pets.addAll(page)
@@ -151,6 +152,7 @@ class PetController {
 
                 override fun handleFault(fault: BackendlessFault) {
                     Log.e("PetController", "Could not load pets: ${fault.message}")
+                    onError(fault.message ?: "Could not load pets.")
                 }
             }
         )
