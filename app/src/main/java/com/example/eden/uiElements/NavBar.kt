@@ -111,28 +111,29 @@ fun BottomBar(navController: NavController)
 
 
     val backStackEntryState by navController.currentBackStackEntryAsState()
-    val currentRoute =backStackEntryState?.destination?.route
-            NavigationBar() {
+    val currentRoute = backStackEntryState?.destination?.route
 
-                navItemList.forEach { (label, route, icon) ->
-                    NavigationBarItem(
-                        selected = currentRoute?.substringBefore("?") == route,
-                        onClick = {
-                            if(currentRoute != route)
-                            {
-                                navController.navigate(route){
-                                    launchSingleTop = true
-                                }
-
-                            }
-                        },
-                        icon = {
-                            androidx.compose.material3.Icon(imageVector = icon, contentDescription = label)
-                        },
-                        label = {Text(label)}
+    NavigationBar {
+        navItemList.forEach { (label, route, icon) ->
+            NavigationBarItem(
+                selected = currentRoute?.substringBefore("?") == route,
+                onClick = {
+                    if (currentRoute?.substringBefore("?") != route) {
+                        navController.navigate(route) {
+                            launchSingleTop = true
+                        }
+                    }
+                },
+                icon = {
+                    androidx.compose.material3.Icon(
+                        imageVector = icon,
+                        contentDescription = label,
                     )
-                }
-            }
+                },
+                label = { Text(label) },
+            )
+        }
+    }
 
 }
 

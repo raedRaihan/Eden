@@ -304,18 +304,7 @@ private fun AnimalEditorDialog(
 
     fun save() {
         val age = ageMonths.toDoubleOrNull()
-        validationError = when {
-            name.isBlank() -> "Name is required."
-            age == null || age < 0 -> "Age must be a non-negative number."
-            species.isBlank() -> "Species is required."
-            breed.isBlank() -> "Breed is required."
-            size.isBlank() -> "Size is required."
-            gender.isBlank() -> "Gender is required."
-            description.isBlank() -> "Description is required."
-            shelterName.isBlank() -> "Shelter name is required."
-            status.isBlank() -> "Status is required."
-            else -> null
-        }
+        validationError = editAnimalValidationError(name, ageMonths, species, breed, size, gender, description, shelterName, status)
         if (validationError != null || age == null) return
 
         saving = true

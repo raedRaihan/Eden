@@ -43,6 +43,7 @@ class AppointmentController {
 
     internal fun loadCalendarVisits(
         userId: String,
+        isAdmin: Boolean = false,
         onSuccess: (List<CalendarVisit>) -> Unit,
         onError: () -> Unit
     ) {
@@ -52,14 +53,22 @@ class AppointmentController {
         }
 
         val escapedUserId = userId.replace("'", "''")
+        val now = System.currentTimeMillis()
+        val whereClause = if (isAdmin) {
+            "(appointmentType = 'VISITATION' AND requestStatus = 'CONFIRMED' " +
+                "AND appointmentDate >= $now) OR " +
+                "(appointmentType = 'ADOPTION' AND requestStatus = 'PICKUP_SCHEDULED' " +
+                "AND pickupDate >= $now)"
+        } else {
+            "userId.objectId = '$escapedUserId' AND appointmentType = 'VISITATION'"
+        }
         val visits = mutableListOf<CalendarVisit>()
         val pageSize = 100
 
         fun loadPage(offset: Int) {
             val query = DataQueryBuilder.create()
-                .setWhereClause("userId.objectId = '$escapedUserId' AND appointmentType = 'VISITATION'")
-                .setRelated("animal")
-                .setSortBy("appointmentDate", "objectId")
+                .setWhereClause(whereClause)
+                .setRelated("animal", "userId")
                 .setPageSize(pageSize)
                 .setOffset(offset)
 
@@ -68,19 +77,35 @@ class AppointmentController {
                 object : AsyncCallback<List<Map<*, *>>> {
                     override fun handleResponse(response: List<Map<*, *>>) {
                         for (record in response) {
-                            val timeMillis = when (val date = record["appointmentDate"]) {
-                                is Date -> date.time
-                                is Number -> date.toLong()
+                            val appointmentType =
+                                record["appointmentType"]?.toString().orEmpty()
+                            val dateValue = if (appointmentType == "ADOPTION") {
+                                record["pickupDate"]
+                            } else {
+                                record["appointmentDate"]
+                            }
+                            val timeMillis = when (dateValue) {
+                                is Date -> dateValue.time
+                                is Number -> dateValue.toLong()
                                 else -> continue
                             }
                             val animal = record["animal"] as? Map<*, *>
+                            val adopter = record["userId"] as? Map<*, *>
+                            val adopterName = listOf(
+                                adopter?.get("first")?.toString().orEmpty(),
+                                adopter?.get("last")?.toString().orEmpty()
+                            ).filter { it.isNotBlank() }.joinToString(" ").ifBlank {
+                                adopter?.get("email")?.toString().orEmpty()
+                            }
                             visits.add(
                                 CalendarVisit(
-                                    timeMillis,
-                                    animal?.get("objectId")?.toString().orEmpty(),
-                                    animal?.get("name") as? String,
-                                    animal?.get("status")?.toString().orEmpty(),
-                                    record["requestStatus"]?.toString().orEmpty()
+                                    timeMillis = timeMillis,
+                                    petId = animal?.get("objectId")?.toString().orEmpty(),
+                                    petName = animal?.get("name") as? String,
+                                    petStatus = animal?.get("status")?.toString().orEmpty(),
+                                    status = record["requestStatus"]?.toString().orEmpty(),
+                                    appointmentType = appointmentType,
+                                    adopterName = adopterName
                                 )
                             )
                         }
@@ -88,12 +113,12 @@ class AppointmentController {
                         if (response.size == pageSize) {
                             loadPage(offset + response.size)
                         } else {
-                            onSuccess(visits.toList())
+                            onSuccess(visits.sortedBy { it.timeMillis })
                         }
                     }
 
                     override fun handleFault(fault: BackendlessFault) {
-                        Log.e("AppointmentController", "Could not load calendar visits: ${fault.message}")
+                        Log.e("AppointmentController", "Could not load calendar appointments: " + fault.message)
                         onError()
                     }
                 }

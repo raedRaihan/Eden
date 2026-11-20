@@ -104,7 +104,7 @@ class Login {
             Button(
                 onClick = { onSubmit(email.trim(), password) },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !loading && email.isNotBlank() && password.isNotBlank(),
+                enabled = canSubmitLogin(email, password, loading),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF213d6c), contentColor = Color.White)
             ) {
                 if (loading) {

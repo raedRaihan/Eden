@@ -5,5 +5,7 @@ internal data class CalendarVisit(
     val petId: String,
     val petName: String?,
     val petStatus: String,
-    val status: String
+    val status: String,
+    val appointmentType: String = "VISITATION",
+    val adopterName: String = ""
 )

@@ -68,17 +68,14 @@ fun AccountSettings(
         !user?.getProperty("accountType")?.toString().equals("OAUTH", ignoreCase = true)
 
     fun saveProfile() {
-        profileError = when {
-            user == null -> "Log in before changing account settings."
-            first.isBlank() -> "First name is required."
-            last.isBlank() -> "Last name is required."
-            !Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches() ->
-                "Enter a valid email address."
-            phone.isNotBlank() && !Patterns.PHONE.matcher(phone.trim()).matches() ->
-                "Enter a valid phone number or leave it blank."
-            profilePassword.isBlank() -> "Enter your current password to save changes."
-            else -> null
-        }
+        profileError = profileValidationError(
+            loggedIn = user != null,
+            first = first,
+            last = last,
+            validEmail = Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches(),
+            profilePassword = profilePassword,
+            validPhone = phone.isBlank() || Patterns.PHONE.matcher(phone.trim()).matches(),
+        )
         if (profileError != null) return
 
         profileLoading = true
@@ -109,15 +106,9 @@ fun AccountSettings(
     }
 
     fun changePassword() {
-        passwordError = when {
-            user == null -> "Log in before changing your password."
-            !isPasswordAccount -> "Password changes are unavailable for social accounts."
-            currentPassword.isBlank() -> "Enter your current password."
-            newPassword.length < 8 -> "The new password must contain at least 8 characters."
-            newPassword != confirmPassword -> "The new passwords do not match."
-            currentPassword == newPassword -> "Choose a password different from the current one."
-            else -> null
-        }
+        passwordError = passwordValidationError(
+            user != null, isPasswordAccount, currentPassword, newPassword, confirmPassword
+        )
         if (passwordError != null || user == null) return
 
         passwordLoading = true

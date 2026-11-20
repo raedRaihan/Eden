@@ -80,9 +80,12 @@ class RequestWorkflowController {
             "AdminService",
             "listRequests",
             emptyArray(),
-            object : AsyncCallback<Array<Map<*, *>>> {
-                override fun handleResponse(response: Array<Map<*, *>>) {
-                    mainHandler.post { onSuccess(response.mapNotNull(::toRequest)) }
+            object : AsyncCallback<Array<Any?>> {
+                override fun handleResponse(response: Array<Any?>) {
+                    val requests = response.mapNotNull { item ->
+                        (item as? Map<*, *>)?.let(::toRequest)
+                    }
+                    mainHandler.post { onSuccess(requests) }
                 }
 
                 override fun handleFault(fault: BackendlessFault) {
@@ -118,7 +121,72 @@ class RequestWorkflowController {
             "AdminService",
             "schedulePickup",
             arrayOf<Any>(requestId, pickupTimestamp),
-            booleanCallback(onSuccess, onError, "The pickup time was not saved."),
+            object : AsyncCallback<Boolean> {
+                override fun handleResponse(response: Boolean?) {
+                    when (response) {
+                        true -> mainHandler.post(onSuccess)
+                        false -> mainHandler.post {
+                            onError("The pickup time was not saved.")
+                        }
+                        null -> verifyPickupScheduled(
+                            requestId = requestId,
+                            pickupTimestamp = pickupTimestamp,
+                            onSuccess = onSuccess,
+                            onError = onError,
+                        )
+                    }
+                }
+
+                override fun handleFault(fault: BackendlessFault) {
+                    mainHandler.post {
+                        onError(fault.message ?: "The pickup time was not saved.")
+                    }
+                }
+            },
+        )
+    }
+
+    private fun verifyPickupScheduled(
+        requestId: String,
+        pickupTimestamp: Long,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit,
+    ) {
+        val escapedRequestId = requestId.replace("'", "''")
+        val query = DataQueryBuilder.create()
+            .setWhereClause("objectId = '$escapedRequestId'")
+            .setPageSize(1)
+
+        Backendless.Data.of("Appointment").find(
+            query,
+            object : AsyncCallback<List<Map<*, *>>> {
+                override fun handleResponse(response: List<Map<*, *>>) {
+                    val request = response.firstOrNull()
+                    val savedPickup = request?.get("pickupDate").asDate()?.time
+                    val savedStatus = request?.get("requestStatus")?.toString()
+                    val timestampMatches = savedPickup != null &&
+                        kotlin.math.abs(savedPickup - pickupTimestamp) < 60_000L
+                    mainHandler.post {
+                        if (savedStatus == "PICKUP_SCHEDULED" && timestampMatches) {
+                            onSuccess()
+                        } else {
+                            onError(
+                                "The pickup time was not saved. " +
+                                    "The server returned an empty response and no matching update was found."
+                            )
+                        }
+                    }
+                }
+
+                override fun handleFault(fault: BackendlessFault) {
+                    mainHandler.post {
+                        onError(
+                            fault.message
+                                ?: "The server returned an empty response and the pickup could not be verified."
+                        )
+                    }
+                }
+            },
         )
     }
 
@@ -127,9 +195,19 @@ class RequestWorkflowController {
         onError: (String) -> Unit,
         falseMessage: String,
     ) = object : AsyncCallback<Boolean> {
-        override fun handleResponse(response: Boolean) {
+        override fun handleResponse(response: Boolean?) {
             mainHandler.post {
-                if (response) onSuccess() else onError(falseMessage)
+                if (response == true) {
+                    onSuccess()
+                } else {
+                    onError(
+                        if (response == null) {
+                            "$falseMessage The server returned an empty response."
+                        } else {
+                            falseMessage
+                        }
+                    )
+                }
             }
         }
 

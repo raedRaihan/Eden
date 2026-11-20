@@ -56,18 +56,22 @@ import java.util.Date
 @Composable
 fun Calendar(navController: NavController) {
     val userId = MainActivity.loggedInUser?.objectId
-    var visits by remember(userId) { mutableStateOf<List<CalendarVisit>>(emptyList()) }
-    var selectedDay by remember(userId) { mutableStateOf<LocalDate?>(null) }
-    var refresh by remember(userId) { mutableIntStateOf(0) }
-    var loading by remember(userId, refresh) { mutableStateOf(!userId.isNullOrBlank()) }
-    var failed by remember(userId, refresh) { mutableStateOf(false) }
+    val isAdmin = MainActivity.loggedInIsAdmin
+    var visits by remember(userId, isAdmin) { mutableStateOf<List<CalendarVisit>>(emptyList()) }
+    var selectedDay by remember(userId, isAdmin) { mutableStateOf<LocalDate?>(null) }
+    var refresh by remember(userId, isAdmin) { mutableIntStateOf(0) }
+    var loading by remember(userId, isAdmin, refresh) {
+        mutableStateOf(!userId.isNullOrBlank())
+    }
+    var failed by remember(userId, isAdmin, refresh) { mutableStateOf(false) }
 
-    DisposableEffect(userId, refresh) {
+    DisposableEffect(userId, isAdmin, refresh) {
         var active = true
         val main = Handler(Looper.getMainLooper())
         if (!userId.isNullOrBlank()) {
             AppointmentController().loadCalendarVisits(
                 userId = userId,
+                isAdmin = isAdmin,
                 onSuccess = { loaded ->
                     main.post {
                         if (active) {
@@ -93,15 +97,12 @@ fun Calendar(navController: NavController) {
     val today = LocalDate.now(zone)
     var month by remember(userId) { mutableStateOf(YearMonth.from(today)) }
     val visitDates = remember(visits, zone) {
-        visits.map { Instant.ofEpochMilli(it.timeMillis).atZone(zone).toLocalDate() }.toSet()
+        visits.map { calendarVisitDay(it, zone) }.toSet()
     }
     val now = System.currentTimeMillis()
-    val visible = visits.filter { visit ->
-        selectedDay == null ||
-            Instant.ofEpochMilli(visit.timeMillis).atZone(zone).toLocalDate() == selectedDay
-    }
-    val upcoming = visible.filter { it.timeMillis >= now }.sortedBy { it.timeMillis }
-    val past = visible.filter { it.timeMillis < now }.sortedByDescending { it.timeMillis }
+    val groupedVisits = groupCalendarVisits(visits, selectedDay, zone, now)
+    val upcoming = groupedVisits.upcoming
+    val past = groupedVisits.past
     val dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
 
     Scaffold(
@@ -141,7 +142,7 @@ fun Calendar(navController: NavController) {
                 when {
                     loading -> item { CircularProgressIndicator() }
                     failed -> item { Text(stringResource(R.string.calendar_load_failed)) }
-                    visible.isEmpty() -> item {
+                    upcoming.isEmpty() && past.isEmpty() -> item {
                         Text(stringResource(if (selectedDay == null) R.string.calendar_no_visits else R.string.calendar_no_day_visits))
                     }
                     else -> {
@@ -274,14 +275,19 @@ private fun VisitRow(visit: CalendarVisit, navController: NavController) {
     val date = Date(visit.timeMillis)
     val day = android.text.format.DateFormat.getDateFormat(context).format(date)
     val time = android.text.format.DateFormat.getTimeFormat(context).format(date)
+    val isPickup = visit.appointmentType.equals("ADOPTION", ignoreCase = true)
     Text(
         visit.petName?.takeIf { it.isNotBlank() } ?: stringResource(R.string.unknown_pet),
         style = MaterialTheme.typography.titleSmall
     )
+    Text(if (isPickup) "Adoption pickup" else "Pet visitation")
     Text(stringResource(R.string.calendar_visit_date_time, day, time))
+    if (MainActivity.loggedInIsAdmin && visit.adopterName.isNotBlank()) {
+        Text("Adopter: ${visit.adopterName}")
+    }
     val status = visit.status.ifBlank { stringResource(R.string.unknown_pet) }
     Text(stringResource(R.string.calendar_visit_status, status))
-    if (visit.petId.isNotBlank()) {
+    if (!MainActivity.loggedInIsAdmin && !isPickup && visit.petId.isNotBlank()) {
         TextButton(
             onClick = {
                 MainActivity.chosenPetGlobal = hashMapOf(

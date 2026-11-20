@@ -3,6 +3,7 @@ package com.example.eden.Screens
 import android.util.Log
 import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -33,6 +34,7 @@ fun Notifications(navController: NavController, email: String, isAdmin: Boolean)
         mutableStateOf<List<Map<*, *>>>(emptyList())
     }
     var refreshKey by remember(email) { mutableIntStateOf(0) }
+    var showReadNotifications by remember(email) { mutableStateOf(true) }
 
     LaunchedEffect(email, refreshKey) {
         if (email.isBlank()) {
@@ -72,12 +74,30 @@ fun Notifications(navController: NavController, email: String, isAdmin: Boolean)
             update = { view ->
                 val notificationCenter =
                     view.findViewById<LinearLayout>(R.id.notificationCenter)
+                val refreshButton =
+                    view.findViewById<Button>(R.id.refreshNotificationsButton)
+                val toggleReadButton =
+                    view.findViewById<Button>(R.id.toggleReadNotificationsButton)
+                refreshButton.setOnClickListener { refreshKey++ }
+                toggleReadButton.text = view.context.getString(
+                    if (showReadNotifications) {
+                        R.string.hide_read_notifications
+                    } else {
+                        R.string.show_read_notifications
+                    }
+                )
+                toggleReadButton.setOnClickListener {
+                    showReadNotifications = !showReadNotifications
+                }
                 val controller = notificationController()
                 notificationCenter.removeAllViews()
 
                 val inflater = LayoutInflater.from(notificationCenter.context)
                 notifications
-                    .filter { it["active"] == true }
+                    .filter { notification ->
+                        notification["active"] == true &&
+                            (showReadNotifications || notification["read"] != true)
+                    }
                     .forEach { notification ->
                         val row = inflater.inflate(
                             R.layout.notification_entry,
@@ -90,8 +110,8 @@ fun Notifications(navController: NavController, email: String, isAdmin: Boolean)
                             row.findViewById<ImageView>(R.id.newNotificationIcon)
                         val notificationText =
                             row.findViewById<TextView>(R.id.notificationText)
-                        val removeNotification =
-                            row.findViewById<ImageView>(R.id.removeNotification)
+                        val markNotificationRead =
+                            row.findViewById<Button>(R.id.markNotificationRead)
                         val objectId = notification["objectId"]?.toString()
                         val request = notification["request"] as? Map<*, *>
                         val requestId = request?.get("objectId")?.toString()
@@ -150,13 +170,6 @@ fun Notifications(navController: NavController, email: String, isAdmin: Boolean)
                         ).joinToString("\n")
 
                         notificationFrame.setOnClickListener {
-                            if (objectId != null && notification["read"] != true) {
-                                controller.removeNotificationOrSetRead(
-                                    objectId = objectId,
-                                    changeReadValue = true,
-                                    onSuccess = { refreshKey++ },
-                                )
-                            }
                             val destination = if (isAdmin) {
                                 "manageRequests"
                             } else {
@@ -169,11 +182,13 @@ fun Notifications(navController: NavController, email: String, isAdmin: Boolean)
                                 launchSingleTop = true
                             }
                         }
-                        removeNotification.setOnClickListener {
-                            if (objectId != null) {
+                        val alreadyRead = notification["read"] == true
+                        markNotificationRead.isEnabled = !alreadyRead
+                        markNotificationRead.setOnClickListener {
+                            if (objectId != null && !alreadyRead) {
                                 controller.removeNotificationOrSetRead(
                                     objectId = objectId,
-                                    changeReadValue = false,
+                                    changeReadValue = true,
                                     onSuccess = { refreshKey++ },
                                 )
                             }

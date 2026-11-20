@@ -282,16 +282,7 @@ private fun PetFilteringQuizDialog(
     fun save() {
         val minimum = minAge.takeIf { it.isNotBlank() }?.toIntOrNull()
         val maximum = maxAge.takeIf { it.isNotBlank() }?.toIntOrNull()
-        validationError = when {
-            minAge.isNotBlank() && minimum == null -> "Minimum age must be a whole number."
-            maxAge.isNotBlank() && maximum == null -> "Maximum age must be a whole number."
-            minimum != null && minimum < 0 -> "Minimum age cannot be negative."
-            maximum != null && maximum < 0 -> "Maximum age cannot be negative."
-            minimum != null && maximum != null && minimum > maximum ->
-                "Minimum age cannot be greater than maximum age."
-            backendlessUser == null -> "Log in before saving preferences."
-            else -> null
-        }
+        validationError = preferencesValidationError(minAge, maxAge, backendlessUser != null)
 
         val user = backendlessUser
         if (validationError != null || user == null) return
