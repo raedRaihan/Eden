@@ -26,9 +26,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import com.example.eden.BuildConfig
 import com.example.eden.R
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.ui.layout.ContentScale
@@ -49,7 +52,8 @@ class Login {
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color(0xFF9abae1))
-                .padding(horizontal = 24.dp),
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp, vertical = 24.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -110,7 +114,7 @@ class Login {
                 if (loading) {
                     CircularProgressIndicator()
                 } else {
-                    Text("Submit")
+                    Text("Sign In")
                 }
             }
 
@@ -118,9 +122,38 @@ class Login {
                 onClick = onSignUp,
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !loading,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF213d6c), contentColor = Color.White)
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF213d6c),
+                    contentColor = Color.White,
+                ),
             ) {
                 Text("Sign up")
+            }
+
+            if (BuildConfig.DEBUG) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "DEMO ONLY — Quick Login",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = Color(0xFF8A0C03),
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+
+                OutlinedButton(
+                    onClick = { onSubmit("admin@eden.com", "password!") },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !loading,
+                ) {
+                    Text("Demo: Sign in as Admin")
+                }
+
+                OutlinedButton(
+                    onClick = { onSubmit("user1@eden.com", "password") },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !loading,
+                ) {
+                    Text("Demo: Sign in as User 1")
+                }
             }
         }
     }
