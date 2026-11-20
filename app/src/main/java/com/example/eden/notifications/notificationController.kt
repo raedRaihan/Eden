@@ -43,10 +43,7 @@ class notificationController {
     fun removeNotificationOrSetRead(objectId: String?, changeReadValue: Boolean, onSuccess: (Map<*, *>) -> Unit)
     {
 
-        val notificationUpdate = mutableMapOf<Any?, Any?>(
-            "objectId" to objectId,
-            (if (changeReadValue) "read" else "active") to changeReadValue,
-        )
+        val notificationUpdate = notificationUpdate(objectId, changeReadValue)
 
         Backendless.Data.of("Notification").save(
             notificationUpdate,

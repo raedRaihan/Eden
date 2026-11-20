@@ -209,13 +209,9 @@ class AppointmentController {
     ) {
         val applicationText = notes.trim()
 
-        if (requestId.isBlank() || petId.isBlank() || userId.isBlank()) {
-            onError("Sign in and select a pet before applying.")
-            return
-        }
-
-        if (applicationText.isBlank() || applicationText.length > 500) {
-            onError("Write an application between 1 and 500 characters.")
+        val validationError = adoptionSubmissionError(requestId, petId, userId, notes)
+        if (validationError != null) {
+            onError(validationError)
             return
         }
 

@@ -93,15 +93,12 @@ fun Calendar(navController: NavController) {
     val today = LocalDate.now(zone)
     var month by remember(userId) { mutableStateOf(YearMonth.from(today)) }
     val visitDates = remember(visits, zone) {
-        visits.map { Instant.ofEpochMilli(it.timeMillis).atZone(zone).toLocalDate() }.toSet()
+        visits.map { calendarVisitDay(it, zone) }.toSet()
     }
     val now = System.currentTimeMillis()
-    val visible = visits.filter { visit ->
-        selectedDay == null ||
-            Instant.ofEpochMilli(visit.timeMillis).atZone(zone).toLocalDate() == selectedDay
-    }
-    val upcoming = visible.filter { it.timeMillis >= now }.sortedBy { it.timeMillis }
-    val past = visible.filter { it.timeMillis < now }.sortedByDescending { it.timeMillis }
+    val groupedVisits = groupCalendarVisits(visits, selectedDay, zone, now)
+    val upcoming = groupedVisits.upcoming
+    val past = groupedVisits.past
     val dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
 
     Scaffold(
@@ -141,7 +138,7 @@ fun Calendar(navController: NavController) {
                 when {
                     loading -> item { CircularProgressIndicator() }
                     failed -> item { Text(stringResource(R.string.calendar_load_failed)) }
-                    visible.isEmpty() -> item {
+                    upcoming.isEmpty() && past.isEmpty() -> item {
                         Text(stringResource(if (selectedDay == null) R.string.calendar_no_visits else R.string.calendar_no_day_visits))
                     }
                     else -> {

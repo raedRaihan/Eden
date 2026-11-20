@@ -46,17 +46,7 @@ fun CreateAnimalProfile(navController: NavController) {
 
     fun submit() {
         val parsedAge = ageMonths.toDoubleOrNull()
-        error = when {
-            name.isBlank() -> "Name is required."
-            parsedAge == null || parsedAge < 0 -> "Age must be a non-negative number of months."
-            species.isBlank() -> "Species is required."
-            breed.isBlank() -> "Breed is required."
-            size.isBlank() -> "Size is required."
-            gender.isBlank() -> "Gender is required."
-            description.isBlank() -> "Description is required."
-            shelterName.isBlank() -> "Shelter name is required."
-            else -> null
-        }
+        error = createAnimalValidationError(name, ageMonths, species, breed, size, gender, description, shelterName)
         if (error != null || parsedAge == null) return
 
         loading = true

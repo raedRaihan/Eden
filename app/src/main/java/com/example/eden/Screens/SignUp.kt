@@ -43,14 +43,7 @@ fun SignUp(
     var validationError by remember { mutableStateOf<String?>(null) }
 
     fun submit() {
-        validationError = when {
-            first.isBlank() || last.isBlank() || email.isBlank() ||
-                password.isBlank() || confirmPassword.isBlank() ->
-                "All fields are required."
-            !email.contains("@") -> "Enter a valid email address."
-            password != confirmPassword -> "Passwords do not match."
-            else -> null
-        }
+        validationError = signUpValidationError(first, last, email, password, confirmPassword)
 
         if (validationError == null) {
             onSubmit(

@@ -48,12 +48,7 @@ class AdopterPreferencesController {
                         if (response.size == 100) {
                             loadPage(offset + response.size)
                         } else {
-                            val options = PetFilterOptions(
-                                species = distinctValues(records, "species"),
-                                breeds = distinctValues(records, "breed"),
-                                sizes = distinctValues(records, "size"),
-                                genders = distinctValues(records, "gender")
-                            )
+                            val options = petFilterOptions(records)
                             mainHandler.post { onSuccess(options) }
                         }
                     }
@@ -224,11 +219,6 @@ class AdopterPreferencesController {
             }
         )
     }
-
-    private fun distinctValues(records: List<Map<*, *>>, key: String): List<String> =
-        records.mapNotNull { record ->
-            record[key]?.toString()?.trim()?.takeIf(String::isNotEmpty)
-        }.distinct().sorted()
 
     private fun escapeForWhereClause(value: String): String =
         value.replace("'", "''")
