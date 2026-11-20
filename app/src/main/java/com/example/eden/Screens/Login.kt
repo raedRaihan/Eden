@@ -127,7 +127,7 @@ class Login {
                     contentColor = Color.White,
                 ),
             ) {
-                Text("Sign up")
+                Text("Sign Up")
             }
 
             if (BuildConfig.DEBUG) {
