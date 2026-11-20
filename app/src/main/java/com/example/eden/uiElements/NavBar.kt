@@ -25,7 +25,7 @@ import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.IconButton
@@ -91,9 +91,9 @@ fun BottomBar(navController: NavController)
 {
     val roleSpecificItem = if (MainActivity.loggedInIsAdmin) {
         NavItem(
-            "Admin Dashboard",
+            "Admin",
             "adminDashboard",
-            icon = Icons.Default.Star,
+            icon = Icons.Default.Build,
         )
     } else {
         NavItem(

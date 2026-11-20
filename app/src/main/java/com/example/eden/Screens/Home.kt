@@ -6,6 +6,7 @@ import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -22,6 +23,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
 import com.bumptech.glide.Glide
+import com.example.eden.MainActivity
 import com.example.eden.MainActivity.Companion.chosenPetGlobal
 import com.example.eden.R
 import com.example.eden.uiElements.BottomBar
@@ -47,6 +49,18 @@ fun Home(navController: NavController, email: String) {
                 val inflater = LayoutInflater.from(themedContext)
                 val root = inflater.inflate(R.layout.dashboard, null, false)
                 val filter = root.findViewById<Spinner>(R.id.speciesFilter)
+                if (MainActivity.loggedInIsAdmin) {
+                    val adminFilterOptions = context.resources
+                        .getStringArray(R.array.pet_species)
+                        .filterNot { it == "User Preferences" }
+                    filter.adapter = ArrayAdapter(
+                        themedContext,
+                        android.R.layout.simple_spinner_item,
+                        adminFilterOptions,
+                    ).apply {
+                        setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                    }
+                }
                 val refresh = root.findViewById<Button>(R.id.refreshPets)
                 val progress = root.findViewById<ProgressBar>(R.id.petsLoading)
                 val message = root.findViewById<TextView>(R.id.petsMessage)
