@@ -64,11 +64,35 @@ fun Calendar(navController: NavController) {
         mutableStateOf(!userId.isNullOrBlank())
     }
     var failed by remember(userId, isAdmin, refresh) { mutableStateOf(false) }
+    var applicationPetIds by remember(userId, isAdmin, refresh) {
+        mutableStateOf<Set<String>?>(if (isAdmin) emptySet() else null)
+    }
 
     DisposableEffect(userId, isAdmin, refresh) {
         var active = true
         val main = Handler(Looper.getMainLooper())
         if (!userId.isNullOrBlank()) {
+            if (!isAdmin) {
+                RequestWorkflowController().loadMyRequests(
+                    userId = userId,
+                    onSuccess = { loaded ->
+                        main.post {
+                            if (active) {
+                                applicationPetIds = loaded
+                                    .filter { it.appointmentType.equals("ADOPTION", ignoreCase = true) }
+                                    .map { it.animalId }
+                                    .filter { it.isNotBlank() }
+                                    .toSet()
+                            }
+                        }
+                    },
+                    onError = {
+                        main.post {
+                            if (active) applicationPetIds = null
+                        }
+                    },
+                )
+            }
             AppointmentController().loadCalendarVisits(
                 userId = userId,
                 isAdmin = isAdmin,
@@ -148,11 +172,11 @@ fun Calendar(navController: NavController) {
                     else -> {
                         if (upcoming.isNotEmpty()) {
                             item { VisitSection(R.string.calendar_upcoming) }
-                            items(upcoming) { VisitRow(it, navController) }
+                            items(upcoming) { VisitRow(it, navController, applicationPetIds) }
                         }
                         if (past.isNotEmpty()) {
                             item { VisitSection(R.string.calendar_past) }
-                            items(past) { VisitRow(it, navController) }
+                            items(past) { VisitRow(it, navController, applicationPetIds) }
                         }
                     }
                 }
@@ -270,7 +294,11 @@ private fun VisitSection(title: Int) {
 }
 
 @Composable
-private fun VisitRow(visit: CalendarVisit, navController: NavController) {
+private fun VisitRow(
+    visit: CalendarVisit,
+    navController: NavController,
+    applicationPetIds: Set<String>?,
+) {
     val context = LocalContext.current
     val date = Date(visit.timeMillis)
     val day = android.text.format.DateFormat.getDateFormat(context).format(date)
@@ -288,7 +316,10 @@ private fun VisitRow(visit: CalendarVisit, navController: NavController) {
     val status = visit.status.ifBlank { stringResource(R.string.unknown_pet) }
     Text(stringResource(R.string.calendar_visit_status, status))
     if (!MainActivity.loggedInIsAdmin && !isPickup && visit.petId.isNotBlank()) {
+        val applicationCheckComplete = applicationPetIds != null
+        val alreadyApplied = applicationPetIds?.contains(visit.petId) == true
         TextButton(
+            enabled = applicationCheckComplete && !alreadyApplied,
             onClick = {
                 MainActivity.chosenPetGlobal = hashMapOf(
                     "objectId" to visit.petId,
@@ -298,7 +329,13 @@ private fun VisitRow(visit: CalendarVisit, navController: NavController) {
                 navController.navigate("adoptionForm")
             },
         ) {
-            Text("Apply to adopt ${visit.petName.orEmpty().ifBlank { "this pet" }}")
+            Text(
+                when {
+                    alreadyApplied -> "Application already submitted"
+                    !applicationCheckComplete -> "Checking application…"
+                    else -> "Apply to adopt ${visit.petName.orEmpty().ifBlank { "this pet" }}"
+                },
+            )
         }
     }
     HorizontalDivider(Modifier.padding(top = 8.dp))

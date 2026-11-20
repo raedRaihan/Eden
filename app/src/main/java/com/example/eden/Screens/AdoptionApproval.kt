@@ -48,6 +48,11 @@ fun AdoptionApproval(navController: NavController, focusedRequestId: String? = n
     val filteredRequests = requests.filter {
         it.matchesFilters(fromMillis, toMillis, selectedSpecies)
     }
+    val applicationPetIds = requests
+        .filter { it.appointmentType.equals("ADOPTION", true) }
+        .map { it.animalId }
+        .filter { it.isNotBlank() }
+        .toSet()
 
     fun loadRequests() {
         loading = true
@@ -161,7 +166,9 @@ fun AdoptionApproval(navController: NavController, focusedRequestId: String? = n
                                     request.animalId.isNotBlank()
                                 ) {
                                     Spacer(Modifier.height(12.dp))
+                                    val alreadyApplied = request.animalId in applicationPetIds
                                     Button(
+                                        enabled = !alreadyApplied,
                                         onClick = {
                                             MainActivity.chosenPetGlobal = hashMapOf(
                                                 "objectId" to request.animalId,
@@ -171,7 +178,10 @@ fun AdoptionApproval(navController: NavController, focusedRequestId: String? = n
                                             navController.navigate("adoptionForm")
                                         },
                                     ) {
-                                        Text("Apply to adopt ${request.animalName}")
+                                        Text(
+                                            if (alreadyApplied) "Application already submitted"
+                                            else "Apply to adopt ${request.animalName}",
+                                        )
                                     }
                                 }
                                 if (

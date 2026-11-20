@@ -22,6 +22,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -47,8 +48,10 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
 import com.bumptech.glide.Glide
 import com.yalantis.ucrop.UCrop
+import com.example.eden.records.MedicalRecordController
 import com.example.eden.uiElements.BottomBar
 import com.example.eden.uiElements.TopBar
+import com.google.gson.Gson
 
 private val breedsBySpecies = mapOf(
     "Cat" to listOf(
@@ -70,6 +73,44 @@ private val breedsBySpecies = mapOf(
 )
 private val animalSizes = listOf("Small", "Medium", "Large")
 private val animalGenders = listOf("Female", "Male", "Unknown")
+
+private data class MedicalVisitEditor(
+    val date: String = "",
+    val weightAndTemp: String = "",
+    val treatmentNotes: String = "",
+)
+
+private fun parseMedicalVisits(value: Any?): List<MedicalVisitEditor> {
+    if (value == null) return emptyList()
+
+    val rawVisits: List<*> = when (value) {
+        is List<*> -> value
+        is Iterable<*> -> value.toList()
+        is Array<*> -> value.toList()
+        is String -> runCatching {
+            Gson().fromJson(value, List::class.java)
+        }.getOrNull() ?: emptyList<Any?>()
+        else -> runCatching {
+            Gson().fromJson(Gson().toJson(value), List::class.java)
+        }.getOrNull() ?: emptyList<Any?>()
+    }
+
+    return rawVisits.mapNotNull { visit ->
+        val values = when (visit) {
+            is Map<*, *> -> visit
+            else -> runCatching {
+                @Suppress("UNCHECKED_CAST")
+                Gson().fromJson(Gson().toJson(visit), Map::class.java) as Map<*, *>
+            }.getOrNull()
+        } ?: return@mapNotNull null
+
+        MedicalVisitEditor(
+            date = values["date"]?.toString().orEmpty(),
+            weightAndTemp = values["weightAndTemp"]?.toString().orEmpty(),
+            treatmentNotes = values["treatmentNotes"]?.toString().orEmpty(),
+        )
+    }
+}
 
 @Composable
 fun ManageAnimalProfiles(navController: NavController, initialAnimalId: String? = null) {
@@ -299,8 +340,44 @@ private fun AnimalEditorDialog(
     var status by remember(initial) {
         mutableStateOf(initial?.status?.ifBlank { "Available" } ?: "Available")
     }
+    val medicalController = remember { MedicalRecordController() }
+    var manageMedicalRecord by remember(initial) { mutableStateOf(false) }
+    var medicalRecordId by remember(initial) { mutableStateOf<String?>(null) }
+    var medications by remember(initial) { mutableStateOf("") }
+    var vaccines by remember(initial) { mutableStateOf("") }
+    var veterinarian by remember(initial) { mutableStateOf("") }
+    var allergies by remember(initial) { mutableStateOf("") }
+    var medicalVisits by remember(initial) { mutableStateOf<List<MedicalVisitEditor>>(emptyList()) }
+    var medicalLoading by remember(initial) { mutableStateOf(initial?.objectId != null) }
     var saving by remember { mutableStateOf(false) }
     var validationError by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(initial?.objectId) {
+        val animalId = initial?.objectId
+        if (animalId == null) {
+            medicalLoading = false
+        } else {
+            medicalController.searchForRecords(
+                animalId = animalId,
+                onSuccess = { records ->
+                    records.firstOrNull()?.let { record ->
+                        medicalRecordId = record["objectId"]?.toString()
+                        medications = record["medications"]?.toString().orEmpty()
+                        vaccines = record["vaccines"]?.toString().orEmpty()
+                        veterinarian = record["veterinarian"]?.toString().orEmpty()
+                        allergies = record["allergies"]?.toString().orEmpty()
+                        medicalVisits = parseMedicalVisits(record["visits"])
+                        manageMedicalRecord = true
+                    }
+                    medicalLoading = false
+                },
+                onError = {
+                    medicalLoading = false
+                    validationError = it
+                },
+            )
+        }
+    }
 
     fun save() {
         val age = ageMonths.toDoubleOrNull()
@@ -325,7 +402,36 @@ private fun AnimalEditorDialog(
                     status = status,
                     isDemo = initial?.isDemo ?: false
                 ),
-                onSuccess = { onSaved() },
+                onSuccess = { savedAnimal ->
+                    val animalId = savedAnimal["objectId"]?.toString().orEmpty()
+                    if (!manageMedicalRecord) {
+                        onSaved()
+                    } else if (animalId.isBlank()) {
+                        saving = false
+                        validationError = "The pet was saved, but its medical record could not be assigned."
+                    } else {
+                        medicalController.saveRecord(
+                            animalId = animalId,
+                            existingObjectId = medicalRecordId,
+                            medications = medications,
+                            vaccines = vaccines,
+                            veterinarian = veterinarian,
+                            allergies = allergies,
+                            visits = medicalVisits.map { visit ->
+                                mapOf(
+                                    "date" to visit.date.trim(),
+                                    "weightAndTemp" to visit.weightAndTemp.trim(),
+                                    "treatmentNotes" to visit.treatmentNotes.trim(),
+                                )
+                            },
+                            onSuccess = onSaved,
+                            onError = {
+                                saving = false
+                                validationError = "The pet was saved, but its medical record failed: $it"
+                            },
+                        )
+                    }
+                },
                 onError = {
                     saving = false
                     validationError = it
@@ -421,6 +527,96 @@ private fun AnimalEditorDialog(
                 )
                 cropError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
                 EditorField("Status", status, !saving) { status = it }
+
+                Text(
+                    "Medical Record",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(top = 12.dp),
+                )
+                Row {
+                    Checkbox(
+                        checked = manageMedicalRecord,
+                        onCheckedChange = { manageMedicalRecord = it },
+                        enabled = !saving && !medicalLoading,
+                    )
+                    Text(
+                        if (medicalRecordId == null) {
+                            "Create a medical record for this pet"
+                        } else {
+                            "Update this pet's assigned medical record"
+                        },
+                        modifier = Modifier.padding(top = 12.dp),
+                    )
+                }
+                if (medicalLoading) {
+                    CircularProgressIndicator()
+                }
+                if (manageMedicalRecord && !medicalLoading) {
+                    EditorField("Veterinarian", veterinarian, !saving) {
+                        veterinarian = it
+                    }
+                    EditorField("Medications", medications, !saving) {
+                        medications = it
+                    }
+                    EditorField("Vaccines", vaccines, !saving) {
+                        vaccines = it
+                    }
+                    EditorField("Allergies", allergies, !saving) {
+                        allergies = it
+                    }
+                    Text(
+                        "Visits",
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier.padding(top = 12.dp, bottom = 4.dp),
+                    )
+                    medicalVisits.forEachIndexed { index, visit ->
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 6.dp),
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp)) {
+                                EditorField("Visit date", visit.date, !saving) { value ->
+                                    medicalVisits = medicalVisits.toMutableList().also {
+                                        it[index] = visit.copy(date = value)
+                                    }
+                                }
+                                EditorField(
+                                    "Weight and temperature",
+                                    visit.weightAndTemp,
+                                    !saving,
+                                ) { value ->
+                                    medicalVisits = medicalVisits.toMutableList().also {
+                                        it[index] = visit.copy(weightAndTemp = value)
+                                    }
+                                }
+                                EditorField("Treatment notes", visit.treatmentNotes, !saving) { value ->
+                                    medicalVisits = medicalVisits.toMutableList().also {
+                                        it[index] = visit.copy(treatmentNotes = value)
+                                    }
+                                }
+                                OutlinedButton(
+                                    onClick = {
+                                        medicalVisits = medicalVisits.filterIndexed { itemIndex, _ ->
+                                            itemIndex != index
+                                        }
+                                    },
+                                    enabled = !saving,
+                                ) {
+                                    Text("Remove visit")
+                                }
+                            }
+                        }
+                    }
+                    OutlinedButton(
+                        onClick = { medicalVisits = medicalVisits + MedicalVisitEditor() },
+                        enabled = !saving,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text("Add visit")
+                    }
+                }
+
                 validationError?.let {
                     Text(it, color = MaterialTheme.colorScheme.error)
                 }

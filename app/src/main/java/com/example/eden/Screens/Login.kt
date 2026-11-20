@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -52,6 +53,7 @@ class Login {
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color(0xFF9abae1))
+                .navigationBarsPadding()
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp, vertical = 24.dp),
             verticalArrangement = Arrangement.Center,
@@ -60,7 +62,7 @@ class Login {
             Image(
                 painter = painterResource(id = R.drawable.logo),
                 contentDescription = "Eden logo",
-                modifier = Modifier.size(400.dp),
+                modifier = Modifier.size(360.dp),
                 contentScale = ContentScale.Crop
             )
             Text(
@@ -78,7 +80,7 @@ class Login {
                 Text(error, color = Color.Red)
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             OutlinedTextField(
                 value = email,
@@ -131,13 +133,13 @@ class Login {
             }
 
             if (BuildConfig.DEBUG) {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = "DEMO ONLY — Quick Login",
-                    style = MaterialTheme.typography.labelLarge,
+                    style = MaterialTheme.typography.labelSmall,
                     color = Color(0xFF8A0C03),
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(4.dp))
 
                 OutlinedButton(
                     onClick = { onSubmit("admin@eden.com", "password!") },
@@ -154,6 +156,7 @@ class Login {
                 ) {
                     Text("Demo: Sign in as User 1")
                 }
+                Spacer(modifier = Modifier.height(40.dp))
             }
         }
     }
