@@ -27,6 +27,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -48,6 +50,7 @@ import com.example.eden.util.Constants.APP_ID
 
 import com.example.eden.Screens.Login
 import com.example.eden.Screens.ManageUsers
+import com.example.eden.Screens.ManageRequests
 import com.example.eden.Screens.MedicalRecords
 import com.example.eden.Screens.Notifications
 import com.example.eden.Screens.PetProfile
@@ -345,9 +348,43 @@ class MainActivity : ComponentActivity() {
                         }
                     )
                 }
-                composable("adoptionApproval")
-                {
-                    AdoptionApproval(navController= navController)
+                composable(
+                    route = "adoptionApproval?requestId={requestId}",
+                    arguments = listOf(
+                        navArgument("requestId") {
+                            type = NavType.StringType
+                            nullable = true
+                            defaultValue = null
+                        }
+                    )
+                ) { backStackEntry ->
+                    AdoptionApproval(
+                        navController = navController,
+                        focusedRequestId = backStackEntry.arguments?.getString("requestId")
+                    )
+                }
+                composable(
+                    route = "manageRequests?requestId={requestId}",
+                    arguments = listOf(
+                        navArgument("requestId") {
+                            type = NavType.StringType
+                            nullable = true
+                            defaultValue = null
+                        }
+                    )
+                ) { backStackEntry ->
+                    if (loggedInIsAdmin) {
+                        ManageRequests(
+                            navController = navController,
+                            focusedRequestId = backStackEntry.arguments?.getString("requestId")
+                        )
+                    } else if (loggedInUser != null) {
+                        LaunchedEffect(Unit) {
+                            navController.navigate("home") {
+                                popUpTo("manageRequests") { inclusive = true }
+                            }
+                        }
+                    }
                 }
                 composable("adoptionForm")
                 {
@@ -384,10 +421,21 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 }
-                composable("manageAnimalProfiles")
-                {
+                composable(
+                    route = "manageAnimalProfiles?petId={petId}",
+                    arguments = listOf(
+                        navArgument("petId") {
+                            type = NavType.StringType
+                            nullable = true
+                            defaultValue = null
+                        }
+                    )
+                ) { backStackEntry ->
                     if (loggedInIsAdmin) {
-                        ManageAnimalProfiles(navController = navController)
+                        ManageAnimalProfiles(
+                            navController = navController,
+                            initialAnimalId = backStackEntry.arguments?.getString("petId"),
+                        )
                     } else if (loggedInUser != null) {
                         LaunchedEffect(Unit) {
                             navController.navigate("home") {
@@ -406,7 +454,11 @@ class MainActivity : ComponentActivity() {
                 }
                 composable("notifications")
                 {
-                    Notifications(navController= navController, email = loggedInEmail.orEmpty())
+                    Notifications(
+                        navController = navController,
+                        email = loggedInEmail.orEmpty(),
+                        isAdmin = loggedInIsAdmin,
+                    )
                 }
                 composable("petProfile")
                 {
@@ -461,4 +513,3 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-

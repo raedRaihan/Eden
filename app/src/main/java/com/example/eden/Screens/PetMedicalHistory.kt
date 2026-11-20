@@ -48,9 +48,14 @@ fun MedicalRecords(navController: NavController, chosenPet: HashMap<*, *>) {
 
                 view
             } , update =  { view ->
-                var doctorVisitsTable = view.findViewById<TableLayout>(R.id.doctorVisitsTable)
+                val doctorVisitsTable = view.findViewById<TableLayout>(R.id.doctorVisitsTable)
+                val medicalSubtitle = view.findViewById<TextView>(R.id.medicalSubtitle)
+                medicalSubtitle.text = buildString {
+                    append(chosenPet["name"]?.toString()?.takeIf { it.isNotBlank() } ?: "Pet")
+                    append(" · Health history and care information")
+                }
 
-                var inflater = LayoutInflater.from(doctorVisitsTable.context)
+                val inflater = LayoutInflater.from(doctorVisitsTable.context)
 
                 var MRC= MedicalRecordController()
 
@@ -65,11 +70,17 @@ fun MedicalRecords(navController: NavController, chosenPet: HashMap<*, *>) {
                 var goBackButton = view.findViewById<Button>(R.id.returnToPet)
 
                 goBackButton.setOnClickListener {
-                    navController.navigate("petProfile")
+                    navController.popBackStack()
                 }
 
                 MRC.searchForRecords(animalId,
-                    onSuccess= {    response ->
+                    onSuccess= { response ->
+                        if (doctorVisitsTable.childCount > 1) {
+                            doctorVisitsTable.removeViews(
+                                1,
+                                doctorVisitsTable.childCount - 1
+                            )
+                        }
 
                         for(record in response)
                         {
@@ -106,7 +117,11 @@ fun MedicalRecords(navController: NavController, chosenPet: HashMap<*, *>) {
 
                             veterinarian.text = buildString {
                                 append("Veterinarian: ")
-                                append(( (record["veterinarian"].toString()) ?: "None") as CharSequence?)
+                                append(
+                                    record["veterinarian"]?.toString()
+                                        ?.takeIf { it.isNotBlank() }
+                                        ?: "Not provided"
+                                )
                             }
 
                             medications.text = buildString {

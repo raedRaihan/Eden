@@ -1,6 +1,8 @@
 package com.example.eden.Screens
 
 import android.net.Uri
+import android.app.Activity
+import java.io.File
 import android.widget.ImageView
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -44,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
 import com.bumptech.glide.Glide
+import com.yalantis.ucrop.UCrop
 import com.example.eden.uiElements.BottomBar
 import com.example.eden.uiElements.TopBar
 
@@ -69,7 +72,7 @@ private val animalSizes = listOf("Small", "Medium", "Large")
 private val animalGenders = listOf("Female", "Male", "Unknown")
 
 @Composable
-fun ManageAnimalProfiles(navController: NavController) {
+fun ManageAnimalProfiles(navController: NavController, initialAnimalId: String? = null) {
     val controller = remember { AnimalAdminController() }
     var animals by remember { mutableStateOf<List<AdminAnimal>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
@@ -85,6 +88,9 @@ fun ManageAnimalProfiles(navController: NavController) {
             onSuccess = {
                 animals = it
                 loading = false
+                if (editing == null && !initialAnimalId.isNullOrBlank()) {
+                    editing = it.firstOrNull { animal -> animal.objectId == initialAnimalId }
+                }
             },
             onError = {
                 error = it
@@ -245,10 +251,37 @@ private fun AnimalEditorDialog(
 ) {
     val context = LocalContext.current
     var selectedImageUri by remember(initial) { mutableStateOf<Uri?>(null) }
+    var cropError by remember(initial) { mutableStateOf<String?>(null) }
+    val cropLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK && result.data != null) {
+            selectedImageUri = UCrop.getOutput(result.data!!)
+            cropError = null
+        } else if (result.resultCode == UCrop.RESULT_ERROR && result.data != null) {
+            cropError = UCrop.getError(result.data!!)?.message ?: "Could not crop the image."
+        }
+    }
     val imagePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
-        selectedImageUri = uri
+        if (uri != null) {
+            val destination = Uri.fromFile(
+                File(context.cacheDir, "cropped-pet-${System.currentTimeMillis()}.jpg")
+            )
+            val options = UCrop.Options().apply {
+                setToolbarTitle("Crop pet photo")
+                setFreeStyleCropEnabled(true)
+                setHideBottomControls(false)
+            }
+            cropLauncher.launch(
+                UCrop.of(uri, destination)
+                    .withAspectRatio(4f, 3f)
+                    .withMaxResultSize(1600, 1200)
+                    .withOptions(options)
+                    .getIntent(context)
+            )
+        }
     }
 
     var name by remember(initial) { mutableStateOf(initial?.name.orEmpty()) }
@@ -397,6 +430,7 @@ private fun AnimalEditorDialog(
                     },
                     style = MaterialTheme.typography.bodySmall
                 )
+                cropError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
                 EditorField("Status", status, !saving) { status = it }
                 validationError?.let {
                     Text(it, color = MaterialTheme.colorScheme.error)
@@ -424,7 +458,7 @@ private fun PetImage(
     AndroidView(
         factory = { context ->
             ImageView(context).apply {
-                scaleType = ImageView.ScaleType.CENTER_CROP
+                scaleType = ImageView.ScaleType.FIT_CENTER
                 this.contentDescription = contentDescription
             }
         },
@@ -432,7 +466,7 @@ private fun PetImage(
             imageView.contentDescription = contentDescription
             Glide.with(imageView)
                 .load(imageUrl)
-                .centerCrop()
+                .fitCenter()
                 .into(imageView)
         },
         modifier = Modifier

@@ -1,61 +1,132 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="24dp">
+    android:fillViewport="true">
 
-    <TextView
-        android:id="@+id/afTemp"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/adoption_title"
-        android:textSize="24sp" />
+        android:orientation="vertical"
+        android:padding="24dp">
 
-    <ProgressBar
-        android:id="@+id/adoptionLoading"
-        style="?android:attr/progressBarStyleSmall"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:layout_gravity="center_horizontal"
-        android:visibility="gone" />
+        <TextView
+            android:id="@+id/afTemp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/adoption_title"
+            android:textSize="24sp" />
 
-    <TextView
-        android:id="@+id/adoptionStatusMessage"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:accessibilityLiveRegion="polite"
-        android:visibility="gone" />
+        <ProgressBar
+            android:id="@+id/adoptionLoading"
+            style="?android:attr/progressBarStyleSmall"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_gravity="center_horizontal"
+            android:visibility="gone" />
 
-    <EditText
-        android:id="@+id/adoptionNotesInput"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:minLines="4"
-        android:maxLength="500"
-        android:gravity="top|start"
-        android:hint="@string/adoption_application_hint"
-        android:inputType="textMultiLine"
-        android:importantForAutofill="no" />
+        <TextView
+            android:id="@+id/adoptionStatusMessage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:accessibilityLiveRegion="polite"
+            android:visibility="gone" />
 
-    <Button
-        android:id="@+id/adoptionReviewButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:text="@string/visit_review_title" />
+        <LinearLayout
+            android:id="@+id/adoptionFormFields"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-    <Space
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Housing" />
 
-    <Button
-        android:id="@+id/adoptionBackButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/visit_back" />
+            <Spinner
+                android:id="@+id/adoptionHousingInput"
+                android:layout_width="match_parent"
+                android:layout_height="48dp" />
 
-</LinearLayout>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Pet-care experience" />
+
+            <Spinner
+                android:id="@+id/adoptionExperienceInput"
+                android:layout_width="match_parent"
+                android:layout_height="48dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Do you have other pets?" />
+
+            <Spinner
+                android:id="@+id/adoptionOtherPetsInput"
+                android:layout_width="match_parent"
+                android:layout_height="48dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="How long may the pet be alone each day?" />
+
+            <Spinner
+                android:id="@+id/adoptionHoursAloneInput"
+                android:layout_width="match_parent"
+                android:layout_height="48dp" />
+
+            <EditText
+                android:id="@+id/adoptionReasonInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:gravity="top|start"
+                android:hint="Why do you want to adopt this pet?"
+                android:importantForAutofill="no"
+                android:inputType="textMultiLine"
+                android:maxLength="250"
+                android:minLines="3" />
+
+            <EditText
+                android:id="@+id/adoptionNotesInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:gravity="top|start"
+                android:hint="Anything else we should know? (optional)"
+                android:importantForAutofill="no"
+                android:inputType="textMultiLine"
+                android:maxLength="250"
+                android:minLines="2" />
+
+            <CheckBox
+                android:id="@+id/adoptionResponsibilityInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="I understand the time, financial, and veterinary responsibilities of adoption." />
+
+            <Button
+                android:id="@+id/adoptionReviewButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="@string/visit_review_title" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/adoptionBackButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/visit_back" />
+    </LinearLayout>
+</ScrollView>

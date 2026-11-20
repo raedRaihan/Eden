@@ -2,6 +2,9 @@ package com.example.eden.Screens
 
 import android.annotation.SuppressLint
 import android.graphics.Color
+import android.app.Dialog
+import android.view.Window
+import android.view.WindowManager
 import android.text.Editable
 import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
@@ -51,38 +54,57 @@ fun PetProfile(navController: NavController,  chosenPet: HashMap<*, *>)
                     .error(android.R.drawable.ic_menu_gallery)
                     .into(imageView)
 
+                imageView.setOnClickListener {
+                    val dialog = Dialog(newContext, android.R.style.Theme_Black_NoTitleBar_Fullscreen)
+                    val fullImage = ImageView(newContext).apply {
+                        setBackgroundColor(Color.BLACK)
+                        scaleType = ImageView.ScaleType.FIT_CENTER
+                        contentDescription = "Full-screen photo of ${chosenPet["name"] ?: "pet"}"
+                        setOnClickListener { dialog.dismiss() }
+                    }
+                    dialog.setContentView(fullImage)
+                    dialog.window?.setLayout(
+                        WindowManager.LayoutParams.MATCH_PARENT,
+                        WindowManager.LayoutParams.MATCH_PARENT,
+                    )
+                    Glide.with(fullImage)
+                        .load(chosenPet["image"]?.toString()?.trim())
+                        .fitCenter()
+                        .into(fullImage)
+                    dialog.show()
+                    dialog.window?.setLayout(
+                        WindowManager.LayoutParams.MATCH_PARENT,
+                        WindowManager.LayoutParams.MATCH_PARENT,
+                    )
+                }
+
                 var petName=view.findViewById<TextView>(R.id.petProfileName)
 
-                petName.text = buildString {
-                    append("Pet Name: ")
-                    append((chosenPet["name"] ?: "Unknown") as CharSequence?)
-                }
+                petName.text = chosenPet["name"]?.toString().orEmpty().ifBlank { "Unknown pet" }
 
                 var petDescription=view.findViewById<TextView>(R.id.petProfileDescription)
 
-                petDescription.text = buildString {
-                    append("Bio: ")
-                    append((chosenPet["description"] ?: "None") as CharSequence?)
-                }
+                petDescription.text = chosenPet["description"]?.toString().orEmpty()
+                    .ifBlank { "This pet does not have a biography yet." }
 
                 var petSpecies=view.findViewById<TextView>(R.id.petProfileSpecies)
 
                 petSpecies.text = buildString {
-                    append("Species: ")
+                    append("SPECIES\n")
                     append((chosenPet["species"] ?: "Unknown") as CharSequence?)
                 }
 
                 var petBreed=view.findViewById<TextView>(R.id.petProfileBreed)
 
                 petBreed.text = buildString {
-                    append("Breed: ")
+                    append("BREED\n")
                     append((chosenPet["breed"] ?: "Unknown") as CharSequence?)
                 }
 
                 var petAge=view.findViewById<TextView>(R.id.petProfileAge)
 
                 petAge.text = buildString {
-                    append("Age: ")
+                    append("AGE\n")
                     append(chosenPet["ageMonths"]?.toString() ?: "Unknown")
                     append(" months")
                 }
@@ -90,21 +112,20 @@ fun PetProfile(navController: NavController,  chosenPet: HashMap<*, *>)
                 var petGender=view.findViewById<TextView>(R.id.petProfileGender)
 
                 petGender.text = buildString {
-                    append("Sex: ")
+                    append("GENDER\n")
                     append((chosenPet["gender"] ?: "Unknown") as CharSequence?)
                 }
 
                 var petSize=view.findViewById<TextView>(R.id.petProfileSize)
 
                 petSize.text = buildString {
-                    append("Size: ")
+                    append("SIZE\n")
                     append((chosenPet["size"] ?: "Unknown") as CharSequence?)
                 }
 
                 var petAvailability=view.findViewById<TextView>(R.id.petProfileAvailability)
 
                 petAvailability.text = buildString {
-                    append("Status: ")
                     append((chosenPet["status"] ?: "Unknown") as CharSequence?)
                 }
 
@@ -113,18 +134,35 @@ fun PetProfile(navController: NavController,  chosenPet: HashMap<*, *>)
                 var visitButton=view.findViewById<Button>(R.id.visitButton)
                 var recordsButton=view.findViewById<Button>(R.id.recordsButton)
 
+                if (com.example.eden.MainActivity.loggedInIsAdmin) {
+                    adoptionButton.text = "Edit Pet Details"
+                    visitButton.visibility = View.GONE
+                    adoptionButton.setOnClickListener {
+                        val petId = chosenPet["objectId"]?.toString().orEmpty()
+                        navController.navigate(
+                            if (petId.isBlank()) "manageAnimalProfiles"
+                            else "manageAnimalProfiles?petId=$petId"
+                        )
+                    }
+                } else {
+                    adoptionButton.setOnClickListener {
+                        navController.navigate("adoptionForm")
+                    }
+
+                    visitButton.setOnClickListener {
+                        navController.navigate("visitationForm")
+                    }
+                }
+
                 if(chosenPet["status"] != "Available")
                 {
+                    if (!com.example.eden.MainActivity.loggedInIsAdmin) {
+                        adoptionButton.isEnabled = false
+                    }
                     visitButton.isEnabled = false
                     petAvailability.setTextColor(Color.parseColor("#8a0c03"))
-                }
-
-                adoptionButton.setOnClickListener {
-                    navController.navigate("adoptionForm")
-                }
-
-                visitButton.setOnClickListener {
-                    navController.navigate("visitationForm")
+                } else {
+                    petAvailability.setTextColor(Color.parseColor("#2E7D32"))
                 }
 
                 recordsButton.setOnClickListener {

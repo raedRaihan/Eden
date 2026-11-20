@@ -50,6 +50,9 @@ fun AccountSettings(
         mutableStateOf(user?.getProperty("last")?.toString().orEmpty())
     }
     var email by remember(user?.objectId) { mutableStateOf(originalEmail) }
+    var phone by remember(user?.objectId) {
+        mutableStateOf(user?.getProperty("phone")?.toString().orEmpty())
+    }
     var profilePassword by remember { mutableStateOf("") }
     var profileLoading by remember { mutableStateOf(false) }
     var profileMessage by remember { mutableStateOf<String?>(null) }
@@ -71,6 +74,8 @@ fun AccountSettings(
             last.isBlank() -> "Last name is required."
             !Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches() ->
                 "Enter a valid email address."
+            phone.isNotBlank() && !Patterns.PHONE.matcher(phone.trim()).matches() ->
+                "Enter a valid phone number or leave it blank."
             profilePassword.isBlank() -> "Enter your current password to save changes."
             else -> null
         }
@@ -85,6 +90,7 @@ fun AccountSettings(
             first = first,
             last = last,
             newEmail = email,
+            phone = phone,
             onSuccess = { updatedUser ->
                 profileLoading = false
                 profilePassword = ""
@@ -168,6 +174,15 @@ fun AccountSettings(
                 label = { Text("Email / username") },
                 enabled = !profileLoading,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
+                value = phone,
+                onValueChange = { phone = it },
+                label = { Text("Phone number (optional)") },
+                enabled = !profileLoading,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )

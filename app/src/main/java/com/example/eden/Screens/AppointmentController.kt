@@ -12,6 +12,35 @@ import java.util.Date
 
 class AppointmentController {
 
+    private fun notifyRequestSubmitted(requestId: String, onComplete: () -> Unit) {
+        Backendless.CustomService.invoke(
+            "AdminService",
+            "notifyRequestSubmitted",
+            arrayOf<Any>(requestId),
+            object : AsyncCallback<Boolean> {
+                override fun handleResponse(response: Boolean) {
+                    if (!response) {
+                        Log.w(
+                            "AppointmentController",
+                            "Request was saved, but Backendless did not confirm its notifications."
+                        )
+                    }
+                    onComplete()
+                }
+
+                override fun handleFault(fault: BackendlessFault) {
+                    // The Appointment transaction already succeeded. Do not tell the adopter
+                    // that their request failed or encourage a duplicate submission.
+                    Log.e(
+                        "AppointmentController",
+                        "Request was saved, but submission notifications failed: ${fault.message}"
+                    )
+                    onComplete()
+                }
+            }
+        )
+    }
+
     internal fun loadCalendarVisits(
         userId: String,
         onSuccess: (List<CalendarVisit>) -> Unit,
@@ -48,7 +77,9 @@ class AppointmentController {
                             visits.add(
                                 CalendarVisit(
                                     timeMillis,
+                                    animal?.get("objectId")?.toString().orEmpty(),
                                     animal?.get("name") as? String,
+                                    animal?.get("status")?.toString().orEmpty(),
                                     record["requestStatus"]?.toString().orEmpty()
                                 )
                             )
@@ -183,7 +214,9 @@ class AppointmentController {
                 transaction.setRelation("Appointment", requestId, "userId", arrayOf(userId))
                 transaction.execute(object : AsyncCallback<UnitOfWorkResult> {
                     override fun handleResponse(response: UnitOfWorkResult) {
-                        if (response.isSuccess) onSuccess()
+                        if (response.isSuccess) {
+                            notifyRequestSubmitted(requestId, onSuccess)
+                        }
                         else onError("The visit request could not be saved. Please try again.")
                     }
 
@@ -203,19 +236,30 @@ class AppointmentController {
         requestId: String,
         petId: String,
         userId: String,
+        housingType: String,
+        experienceLevel: String,
+        hasOtherPets: Boolean,
+        hoursAloneRange: String,
+        adoptionReason: String,
+        responsibilityAccepted: Boolean,
         notes: String,
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
-        val applicationText = notes.trim()
+        val applicationText = adoptionReason.trim()
 
         if (requestId.isBlank() || petId.isBlank() || userId.isBlank()) {
             onError("Sign in and select a pet before applying.")
             return
         }
 
-        if (applicationText.isBlank() || applicationText.length > 500) {
-            onError("Write an application between 1 and 500 characters.")
+        if (applicationText.isBlank() || applicationText.length > 250) {
+            onError("Explain why you want to adopt this pet in 250 characters or fewer.")
+            return
+        }
+
+        if (!responsibilityAccepted) {
+            onError("Accept the adoption responsibility statement before submitting.")
             return
         }
 
@@ -227,7 +271,13 @@ class AppointmentController {
                 "objectId" to requestId,
                 "appointmentType" to "ADOPTION",
                 "requestStatus" to "PENDING",
-                "notes" to applicationText
+                "housingType" to housingType,
+                "experienceLevel" to experienceLevel,
+                "hasOtherPets" to hasOtherPets,
+                "hoursAloneRange" to hoursAloneRange,
+                "adoptionReason" to applicationText,
+                "responsibilityAccepted" to responsibilityAccepted,
+                "notes" to notes.trim()
             )
         )
 
@@ -243,7 +293,7 @@ class AppointmentController {
             object : AsyncCallback<UnitOfWorkResult> {
                 override fun handleResponse(response: UnitOfWorkResult) {
                     if (response.isSuccess) {
-                        onSuccess()
+                        notifyRequestSubmitted(requestId, onSuccess)
                     } else {
                         onError("Could not save your application. Please try again.")
                     }

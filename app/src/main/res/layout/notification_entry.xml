@@ -1,40 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-android:id="@+id/notificationFrame"
-android:layout_width="fill_parent"
-android:layout_height="match_parent"
-android:orientation="horizontal"
-android:background="@drawable/animal_frame_and_background"
-    >
+    android:id="@+id/notificationFrame"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="88dp"
+    android:orientation="horizontal"
+    android:gravity="top"
+    android:background="@drawable/animal_frame_and_background"
+    android:padding="12dp">
 
+    <ImageView
+        android:id="@+id/newNotificationIcon"
+        android:layout_width="38dp"
+        android:layout_height="38dp"
+        android:layout_marginEnd="12dp"
+        android:background="@drawable/notification_unread_circle"
+        android:contentDescription="Unread notification"
+        android:padding="8dp"
+        android:src="@drawable/ic_notification_unread"
+        android:scaleType="fitCenter" />
 
-<ImageView
-    android:id="@+id/newNotificationIcon"
-    android:layout_width="50dp"
-    android:layout_height="50dp"
-    android:padding="10dp"
-    android:src="@drawable/blue_star"
-    android:gravity="center_vertical"
-    android:scaleType="centerCrop" />
+    <TextView
+        android:id="@+id/notificationText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:breakStrategy="high_quality"
+        android:lineSpacingExtra="3dp"
+        android:text="Notification"
+        android:textColor="#172B4D"
+        android:textSize="15sp" />
 
-<TextView
-    android:id="@+id/notificationText"
-    android:layout_width="0dp"
-    android:layout_height="match_parent"
-    android:layout_weight="1"
-    android:gravity="center_vertical"
-    android:textColor="#000000"
-    android:paddingBottom="10dp"
-    android:text="Test Notifcation 2nd: " />
-
-<ImageView
-    android:id="@+id/removeNotification"
-    android:layout_width="50dp"
-    android:layout_height="50dp"
-    android:padding="10dp"
-    android:src="@drawable/x_letter"
-    android:gravity="center_vertical"
-    android:scaleType="centerCrop" />
-
-
+    <ImageView
+        android:id="@+id/removeNotification"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="8dp"
+        android:contentDescription="Dismiss notification"
+        android:padding="10dp"
+        android:src="@drawable/x_letter"
+        android:scaleType="fitCenter" />
 </LinearLayout>

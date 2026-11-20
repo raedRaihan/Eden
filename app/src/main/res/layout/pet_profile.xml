@@ -3,161 +3,137 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
-    android:background="#9abae1">
+    android:background="#F8FAFD"
+    android:fillViewport="true">
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
         android:orientation="vertical"
-        android:background="#9abae1"
-        android:gravity="center_horizontal">
+        android:padding="20dp">
 
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/petProfileImage"
-            android:layout_width="200dp"
-            android:layout_height="200dp"
-            android:padding="5dp"
-            app:strokeWidth="10dp"
-            app:strokeColor="#213d6c"
-            app:shapeAppearanceOverlay="@style/circleImageView"
-            android:layout_margin="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="240dp"
+            android:contentDescription="Pet photo"
             android:scaleType="centerCrop"
-            />
+            app:strokeColor="#213D6C"
+            app:strokeWidth="3dp" />
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/petProfileName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:gravity="center"
+            android:text="Pet name"
+            android:textColor="#172B4D"
+            android:textSize="30sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/petProfileAvailability"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            >
+            android:layout_marginTop="6dp"
+            android:text="Available"
+            android:textColor="#2E7D32"
+            android:textSize="16sp"
+            android:textStyle="bold" />
 
+        <TextView
+            android:id="@+id/petProfileDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:lineSpacingExtra="3dp"
+            android:text="Pet description"
+            android:textColor="#334155"
+            android:textSize="17sp" />
 
-
-            <TextView
-                android:id="@+id/petProfileName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="20dp"
-                android:text="Pet Name: "
-                android:textSize="20sp"
-                android:textColor="#FFFFFF"
-                android:layout_gravity="center"
-                />
-
-            <TextView
-                android:id="@+id/petProfileDescription"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="20dp"
-                android:textSize="17sp"
-                android:text="Pet Description: "
-                android:textColor="#FFFFFF"
-                android:layout_gravity="center"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/pet_profile_panel"
+            android:orientation="vertical">
 
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:padding = "1dp"
-                android:layout_gravity="center"
-                >
+                android:orientation="horizontal">
 
                 <TextView
                     android:id="@+id/petProfileSpecies"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:padding="25dp"
-                    android:textSize="15sp"
-                    android:textColor="#FFFFFF"
-                    android:text="Pet Species: "
-                    android:layout_gravity="center"
-                    />
+                    android:layout_weight="1"
+                    android:textColor="#172B4D"
+                    android:textSize="16sp" />
 
                 <TextView
                     android:id="@+id/petProfileBreed"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:padding="25dp"
-                    android:textSize="15sp"
-                    android:textColor="#FFFFFF"
-                    android:text="Pet Breed: "
-                    android:layout_gravity="center"/>
-
+                    android:layout_weight="1"
+                    android:textColor="#172B4D"
+                    android:textSize="16sp" />
             </LinearLayout>
 
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:padding = "1dp"
-                android:layout_gravity="center_horizontal"
-                >
+                android:layout_marginTop="16dp"
+                android:orientation="horizontal">
+
                 <TextView
                     android:id="@+id/petProfileAge"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:padding="20dp"
-                    android:text="Pet Age: "
-                    android:textSize="15sp"
-                    android:textColor="#FFFFFF"
-                    android:layout_gravity="center"/>
+                    android:layout_weight="1"
+                    android:textColor="#172B4D"
+                    android:textSize="16sp" />
 
                 <TextView
                     android:id="@+id/petProfileGender"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:padding="20dp"
-                    android:textSize="15sp"
-                    android:text="Pet Gender: "
-                    android:textColor="#FFFFFF"
-                    android:layout_gravity="center"/>
-
-                <TextView
-                    android:id="@+id/petProfileSize"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:padding="20dp"
-                    android:textSize="15sp"
-                    android:text="Pet Size: "
-                    android:textColor="#FFFFFF"
-                    android:layout_gravity="center"/>
-
+                    android:layout_weight="1"
+                    android:textColor="#172B4D"
+                    android:textSize="16sp" />
             </LinearLayout>
 
             <TextView
-                android:id="@+id/petProfileAvailability"
-                android:layout_width="wrap_content"
+                android:id="@+id/petProfileSize"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="20dp"
-                android:textSize="20sp"
-                android:text="Pet Availability: "
-                android:textColor="#FFFFFF"
-                android:layout_gravity="center"/>
-
+                android:layout_marginTop="16dp"
+                android:textColor="#172B4D"
+                android:textSize="16sp" />
         </LinearLayout>
-
-
 
         <Button
             android:id="@+id/adoptionButton"
-            android:layout_width="238dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-
-            android:text="Adoption Form" />
+            android:layout_marginTop="20dp"
+            android:text="Apply to Adopt" />
 
         <Button
             android:id="@+id/visitButton"
-            android:layout_width="245dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-
-            android:text="Visitation Form" />
+            android:layout_marginTop="8dp"
+            android:text="Schedule a Visit" />
 
         <Button
             android:id="@+id/recordsButton"
-            android:layout_width="245dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-
-            android:text="Medical Records" />
-
-
+            android:layout_marginTop="8dp"
+            android:text="View Medical Records" />
     </LinearLayout>
 </ScrollView>

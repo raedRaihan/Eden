@@ -1,122 +1,150 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:background="#9abae1"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#F8FAFD"
+    android:fillViewport="true">
 
     <LinearLayout
         android:id="@+id/medicalForm"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-
-        android:padding = "26dp"
-
-        >
+        android:padding="20dp">
 
         <TextView
-            android:id="@+id/veterinarianName"
-            android:layout_width="wrap_content"
+            android:id="@+id/medicalTitle"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_gravity="center_horizontal"
-            android:paddingBottom="10dp"
-            android:textColor="#FFFFFF"
-            android:text="Veterinarian: " />
+            android:gravity="center"
+            android:text="Medical Records"
+            android:textColor="#172B4D"
+            android:textSize="30sp"
+            android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/lastUpdated"
-            android:layout_width="wrap_content"
+            android:id="@+id/medicalSubtitle"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_gravity="center_horizontal"
-            android:paddingBottom="10dp"
-            android:textColor="#FFFFFF"
-            android:text="Last Updated: " />
+            android:layout_marginTop="6dp"
+            android:gravity="center"
+            android:text="Health history and care information"
+            android:textColor="#64748B"
+            android:textSize="16sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/pet_profile_panel"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Health Summary"
+                android:textColor="#172B4D"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/veterinarianName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Veterinarian: Not provided"
+                android:textColor="#334155"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/lastUpdated"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Last updated: Not provided"
+                android:textColor="#334155"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/medications"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Medications: None"
+                android:textColor="#334155"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/vaccines"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Vaccines: None"
+                android:textColor="#334155"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/allergies"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Allergies: None"
+                android:textColor="#334155"
+                android:textSize="16sp" />
+        </LinearLayout>
 
         <TextView
-            android:id="@+id/medications"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_gravity="center_horizontal"
-            android:paddingBottom="10dp"
-            android:textColor="#FFFFFF"
-            android:text="Medications: " />
+            android:layout_marginTop="24dp"
+            android:text="Veterinary Visits"
+            android:textColor="#172B4D"
+            android:textSize="22sp"
+            android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/vaccines"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_gravity="center_horizontal"
-            android:paddingBottom="10dp"
-            android:textColor="#FFFFFF"
-            android:text="Vaccines: " />
-
-        <TextView
-            android:id="@+id/allergies"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_gravity="center_horizontal"
-            android:paddingBottom="10dp"
-            android:textColor="#FFFFFF"
-            android:text="Allergies: " />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_gravity="center_horizontal"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:paddingBottom="15dp"
-            android:textColor="#FFFFFF"
-            android:text="Doctor Visitation History" />
-
-        <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        <TableLayout
             android:id="@+id/doctorVisitsTable"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:paddingBottom="20dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/pet_profile_panel"
             android:stretchColumns="1">
-            <TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="10dp">
+
                 <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
                     android:text="Date"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:textColor="#FFFFFF"
-                    android:padding="3dip" />
+                    android:textColor="#172B4D"
+                    android:textStyle="bold" />
+
                 <TextView
-                    android:text="Treatment Notes"
                     android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:textColor="#FFFFFF"
-                    android:padding="3dip" />
+                    android:layout_weight="2"
+                    android:paddingHorizontal="8dp"
+                    android:text="Treatment notes"
+                    android:textColor="#172B4D"
+                    android:textStyle="bold" />
+
                 <TextView
-                    android:text="Weight/Temp"
                     android:layout_width="0dp"
                     android:layout_weight="1"
-                    android:textColor="#FFFFFF"
-                    android:gravity="right"
-                    android:padding="3dip" />
+                    android:gravity="end"
+                    android:text="Weight / temp"
+                    android:textColor="#172B4D"
+                    android:textStyle="bold" />
             </TableRow>
-
-
-
         </TableLayout>
 
         <Button
             android:id="@+id/returnToPet"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_gravity="center_horizontal"
-            android:text="Go back to pet profile" />
-
-
-
+            android:layout_marginTop="20dp"
+            android:text="Back to Pet Profile" />
     </LinearLayout>
-
 </ScrollView>

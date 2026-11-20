@@ -123,6 +123,9 @@ fun ManageUsers(
                                     style = MaterialTheme.typography.titleMedium
                                 )
                                 Text(user.email.ifBlank { "No email" })
+                                Text(
+                                    "Phone: ${user.phone.ifBlank { "Not provided" }}"
+                                )
                                 Text("Account type: ${user.userType.ifBlank { "Unknown" }}")
                                 Text("Status: ${user.userStatus.ifBlank { "Unknown" }}")
                                 if (isCurrentUser) {

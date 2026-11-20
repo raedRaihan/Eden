@@ -38,6 +38,7 @@ import androidx.navigation.NavController
 import com.backendless.BackendlessUser
 import com.example.eden.uiElements.BottomBar
 import com.example.eden.uiElements.TopBar
+import com.example.eden.uiElements.LogOutButton
 import com.example.eden.users.AdopterPreferences
 import com.example.eden.users.AdopterPreferencesController
 import com.example.eden.users.PetFilterOptions
@@ -63,6 +64,7 @@ fun UserProfile(
     var preferencesLoading by remember { mutableStateOf(!isAdmin) }
     var preferencesError by remember { mutableStateOf<String?>(null) }
     val preferencesController = remember { AdopterPreferencesController() }
+    val phone = backendlessUser?.getProperty("phone")?.toString().orEmpty()
 
     fun reloadPreferences() {
         val user = backendlessUser
@@ -130,6 +132,7 @@ fun UserProfile(
             ProfileField("First name", first)
             ProfileField("Last name", last)
             ProfileField("Email", email)
+            ProfileField("Phone number", phone)
             ProfileField("Account type", accountType)
 
             if (saveMessage != null) {
@@ -142,7 +145,16 @@ fun UserProfile(
                 onClick = { navController.navigate("accountSettings") },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Account Settings")
+                Text("Edit Profile")
+            }
+
+            Spacer(Modifier.height(12.dp))
+            TextButton(
+                onClick = { LogOutButton(navController) },
+                enabled = !com.example.eden.MainActivity.skipLoginForDevelopment,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text("Log out", color = MaterialTheme.colorScheme.error)
             }
 
             if (!isAdmin) {

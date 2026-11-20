@@ -38,6 +38,15 @@ fun AdminDashboard(navController: NavController) {
             Spacer(Modifier.height(24.dp))
 
             Button(
+                onClick = { navController.navigate("manageRequests") },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Manage Applications & Visits")
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            Button(
                 onClick = { navController.navigate("manageAnimalProfiles") },
                 modifier = Modifier.fillMaxWidth()
             ) {

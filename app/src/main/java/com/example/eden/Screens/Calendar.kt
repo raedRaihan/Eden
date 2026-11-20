@@ -147,11 +147,11 @@ fun Calendar(navController: NavController) {
                     else -> {
                         if (upcoming.isNotEmpty()) {
                             item { VisitSection(R.string.calendar_upcoming) }
-                            items(upcoming) { VisitRow(it) }
+                            items(upcoming) { VisitRow(it, navController) }
                         }
                         if (past.isNotEmpty()) {
                             item { VisitSection(R.string.calendar_past) }
-                            items(past) { VisitRow(it) }
+                            items(past) { VisitRow(it, navController) }
                         }
                     }
                 }
@@ -269,7 +269,7 @@ private fun VisitSection(title: Int) {
 }
 
 @Composable
-private fun VisitRow(visit: CalendarVisit) {
+private fun VisitRow(visit: CalendarVisit, navController: NavController) {
     val context = LocalContext.current
     val date = Date(visit.timeMillis)
     val day = android.text.format.DateFormat.getDateFormat(context).format(date)
@@ -281,5 +281,19 @@ private fun VisitRow(visit: CalendarVisit) {
     Text(stringResource(R.string.calendar_visit_date_time, day, time))
     val status = visit.status.ifBlank { stringResource(R.string.unknown_pet) }
     Text(stringResource(R.string.calendar_visit_status, status))
+    if (visit.petId.isNotBlank()) {
+        TextButton(
+            onClick = {
+                MainActivity.chosenPetGlobal = hashMapOf(
+                    "objectId" to visit.petId,
+                    "name" to visit.petName.orEmpty(),
+                    "status" to visit.petStatus.ifBlank { "Available" },
+                )
+                navController.navigate("adoptionForm")
+            },
+        ) {
+            Text("Apply to adopt ${visit.petName.orEmpty().ifBlank { "this pet" }}")
+        }
+    }
     HorizontalDivider(Modifier.padding(top = 8.dp))
 }

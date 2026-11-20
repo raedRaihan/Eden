@@ -12,6 +12,7 @@ data class AdminUser(
     val email: String,
     val first: String,
     val last: String,
+    val phone: String,
     val userType: String,
     val userStatus: String
 ) {
@@ -42,6 +43,7 @@ class AdminUsersController {
                                 email = user.getProperty("email")?.toString().orEmpty(),
                                 first = user.getProperty("first")?.toString().orEmpty(),
                                 last = user.getProperty("last")?.toString().orEmpty(),
+                                phone = user.getProperty("phone")?.toString().orEmpty(),
                                 userType = user.getProperty("userType")?.toString().orEmpty(),
                                 userStatus = user.getProperty("userStatus")?.toString().orEmpty()
                             )

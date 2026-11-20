@@ -1,37 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<TableRow xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-    >
+    android:layout_height="wrap_content"
+    android:minHeight="56dp"
+    android:paddingVertical="10dp">
 
-    <TableRow xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-        <TextView
-            android:id="@+id/doctorVisitDate"
-            android:text="00/00/0000"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:textColor="#FFFFFF"
-            android:padding="3dip" />
-        <TextView
-            android:id="@+id/doctorVisitNotes"
-            android:text="Notes"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:textColor="#FFFFFF"
-            android:padding="3dip" />
-        <TextView
-            android:id="@+id/doctorVisitWeight"
-            android:text="00 pounds"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:gravity="right"
-            android:textColor="#FFFFFF"
-            android:padding="3dip" />
-    </TableRow>
+    <TextView
+        android:id="@+id/doctorVisitDate"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="—"
+        android:textColor="#334155"
+        android:textSize="14sp" />
 
-</LinearLayout>
+    <TextView
+        android:id="@+id/doctorVisitNotes"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="2"
+        android:paddingHorizontal="8dp"
+        android:text="No notes"
+        android:textColor="#334155"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/doctorVisitWeight"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="end"
+        android:text="—"
+        android:textColor="#334155"
+        android:textSize="14sp" />
+</TableRow>

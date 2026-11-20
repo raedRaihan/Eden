@@ -9,7 +9,15 @@ import com.backendless.persistence.DataQueryBuilder
 class notificationController {
     fun searchForNotifications(email: String?, onSuccess: (List<Map<*, *>>) -> Unit, onError: (String) -> Unit
     ) {
-        val searchQuery = DataQueryBuilder.create().setPageSize(100)
+        val searchQuery = DataQueryBuilder.create()
+            .setPageSize(100)
+            .setRelated(
+                "request",
+                "request.userId",
+                "request.decidedBy",
+                "request.animal",
+            )
+            .setSortBy("created DESC")
 
 
 

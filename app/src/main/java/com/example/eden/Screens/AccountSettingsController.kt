@@ -16,6 +16,7 @@ class AccountSettingsController {
         first: String,
         last: String,
         newEmail: String,
+        phone: String,
         onSuccess: (BackendlessUser) -> Unit,
         onError: (String) -> Unit
     ) {
@@ -26,6 +27,7 @@ class AccountSettingsController {
                 authenticatedUser.setProperty("first", first.trim())
                 authenticatedUser.setProperty("last", last.trim())
                 authenticatedUser.setProperty("email", newEmail.trim())
+                authenticatedUser.setProperty("phone", phone.trim().ifBlank { null })
                 update(authenticatedUser, onSuccess, onError)
             },
             onError = onError

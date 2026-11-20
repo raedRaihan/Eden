@@ -1,6 +1,5 @@
 package com.example.eden.uiElements
 
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.style.TextAlign
@@ -11,6 +10,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.border
 import androidx.compose.foundation.background
 import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,15 +19,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -41,7 +43,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.shape.CircleShape
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.eden.MainActivity
@@ -95,7 +97,7 @@ fun BottomBar(navController: NavController)
         )
     } else {
         NavItem(
-            "Applications",
+            "My Requests",
             "adoptionApproval",
             icon = Icons.AutoMirrored.Filled.List,
         )
@@ -114,7 +116,7 @@ fun BottomBar(navController: NavController)
 
                 navItemList.forEach { (label, route, icon) ->
                     NavigationBarItem(
-                        selected = currentRoute == route,
+                        selected = currentRoute?.substringBefore("?") == route,
                         onClick = {
                             if(currentRoute != route)
                             {
@@ -163,52 +165,22 @@ fun TopBar(navController: NavController, title: String? = null)
     }
 
     Column {
-            NavigationBar(modifier = Modifier.statusBarsPadding()) {
+        Box(
+            modifier = Modifier.fillMaxWidth().statusBarsPadding().padding(8.dp),
+        ) {
                 if (navController.previousBackStackEntry != null) {
-                    NavigationBarItem(
-                        selected = false,
+                    IconButton(
                         onClick = { navController.popBackStack() },
-                        icon = {
+                        modifier = Modifier.align(Alignment.CenterStart),
+                    ) {
                             Icon(
                                 Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "Back",
                             )
-                        },
-                        label = { Text("Back") },
-                    )
+                    }
                 }
 
-                    NavigationBarItem(
-                        selected = false,
-                        enabled = !MainActivity.skipLoginForDevelopment,
-                        onClick = {
-                            LogOutButton(navController)
-                        },
-                        icon = {
-                            Icon(Icons.Default.Clear, contentDescription = "Logout")
-
-                        },
-                        label = {Text("Logout")}
-                    )
-
-                NavigationBarItem(
-                    selected = false,
-                    onClick = {
-                        navController.navigate("search")
-                        {
-                            popUpTo(navController.graph.id) { inclusive = false }
-                            launchSingleTop = true
-                        }
-                    },
-                    icon = {
-                        Icon(Icons.Default.Search, contentDescription = "Search")
-
-                    },
-                    label = {Text("Search")}
-                )
-
-                NavigationBarItem(
-                    selected = false,
+                IconButton(
                     onClick = {
                         navController.navigate("notifications")
                         {
@@ -216,23 +188,39 @@ fun TopBar(navController: NavController, title: String? = null)
                             launchSingleTop = true
                         }
                     },
-                    icon = {
-                        Icon(Icons.Default.Notifications, contentDescription = "Notifications")
-                        if(notificationCount > 0)
-                        {
-                            Text(
-                                text = "+$notificationCount",
-                                color = Color.Red,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.align(Alignment.Top),
+                    modifier = Modifier.align(Alignment.CenterEnd)
+                        .size(52.dp)
+                        .background(MaterialTheme.colorScheme.surface, CircleShape)
+                        .then(
+                            if (notificationCount > 0) {
+                                Modifier.border(2.dp, Color.Red, CircleShape)
+                            } else Modifier
+                        ),
+                ) {
+                    BadgedBox(
+                        badge = {
+                            if (notificationCount > 0) {
+                                Badge(containerColor = Color.Red) {
+                                    Text(notificationCount.toString(), color = Color.White)
+                                }
+                            }
+                        },
+                    ) {
+                            Icon(
+                                imageVector = if (notificationCount > 0) {
+                                    Icons.Outlined.Notifications
+                                } else {
+                                    Icons.Default.Notifications
+                                },
+                                contentDescription = "Notifications",
+                                tint = if (notificationCount > 0) {
+                                    Color.Red
+                                } else {
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                },
                             )
-                        }
-
-
-                    },
-                    label = {Text("Notifications")}
-                )
-
+                    }
+                }
             }
 
         if (title != null) {

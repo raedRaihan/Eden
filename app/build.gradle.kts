@@ -78,6 +78,7 @@ dependencies {
     implementation("androidx.compose.material:material-icons-core:1.7.8")
 
     implementation("com.github.bumptech.glide:glide:4.16.0")
+    implementation("com.github.yalantis:ucrop:2.2.11")
 
     implementation("com.google.code.gson:gson:2.15.0")
 

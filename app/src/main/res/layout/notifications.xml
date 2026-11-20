@@ -10,18 +10,6 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:id="@+id/notificationCenter"
-        >
-
-        <Button
-            android:id="@+id/testNotification"
-            android:layout_width="238dp"
-            android:layout_gravity="center"
-            android:layout_height="wrap_content"
-            android:paddingBottom="10dp"
-            android:text="Test Notification" />
-
-
-
-    </LinearLayout>
+        android:padding="12dp" />
 
 </ScrollView>

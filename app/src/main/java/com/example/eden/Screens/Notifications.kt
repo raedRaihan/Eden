@@ -3,7 +3,6 @@ package com.example.eden.Screens
 import android.util.Log
 import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
-import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -25,9 +24,11 @@ import com.example.eden.notifications.notificationController
 import com.example.eden.uiElements.BottomBar
 import com.example.eden.uiElements.TopBar
 import com.google.android.material.R as MaterialR
+import java.text.DateFormat
+import java.util.Date
 
 @Composable
-fun Notifications(navController: NavController, email: String) {
+fun Notifications(navController: NavController, email: String, isAdmin: Boolean) {
     var notifications by remember(email) {
         mutableStateOf<List<Map<*, *>>>(emptyList())
     }
@@ -71,24 +72,8 @@ fun Notifications(navController: NavController, email: String) {
             update = { view ->
                 val notificationCenter =
                     view.findViewById<LinearLayout>(R.id.notificationCenter)
-                val testButton = view.findViewById<Button>(R.id.testNotification)
                 val controller = notificationController()
-
-                testButton.setOnClickListener {
-                    controller.addNotification(
-                        email = email,
-                        message = "test notification",
-                        onSuccess = { refreshKey++ },
-                        onError = { message ->
-                            Log.e("Notifications", "Create failure: $message")
-                        },
-                    )
-                }
-
-                // Keep the test button, but rebuild the data-dependent rows.
-                while (notificationCenter.childCount > 1) {
-                    notificationCenter.removeViewAt(1)
-                }
+                notificationCenter.removeAllViews()
 
                 val inflater = LayoutInflater.from(notificationCenter.context)
                 notifications
@@ -108,6 +93,23 @@ fun Notifications(navController: NavController, email: String) {
                         val removeNotification =
                             row.findViewById<ImageView>(R.id.removeNotification)
                         val objectId = notification["objectId"]?.toString()
+                        val request = notification["request"] as? Map<*, *>
+                        val requestId = request?.get("objectId")?.toString()
+                        val adopter = request?.get("userId") as? Map<*, *>
+                        val decidedBy = request?.get("decidedBy") as? Map<*, *>
+                        val animal = request?.get("animal") as? Map<*, *>
+
+                        fun displayIdentity(user: Map<*, *>?): String {
+                            val name = listOf(
+                                user?.get("first")?.toString().orEmpty(),
+                                user?.get("last")?.toString().orEmpty(),
+                            ).filter { it.isNotBlank() }.joinToString(" ")
+                            return name.ifBlank {
+                                user?.get("name")?.toString().orEmpty().ifBlank {
+                                    user?.get("email")?.toString().orEmpty()
+                                }
+                            }
+                        }
 
                         newNotificationIcon.visibility =
                             if (notification["read"] == true) {
@@ -115,8 +117,37 @@ fun Notifications(navController: NavController, email: String) {
                             } else {
                                 android.view.View.VISIBLE
                             }
-                        notificationText.text =
-                            notification["message"]?.toString() ?: "Unknown"
+                        val message = notification["message"]?.toString() ?: "Unknown"
+                        val petName = animal?.get("name")?.toString().orEmpty()
+                        val petSpecies = animal?.get("species")?.toString().orEmpty()
+                        val petDetails = when {
+                            petName.isNotBlank() && petSpecies.isNotBlank() ->
+                                "Pet: $petName ($petSpecies)"
+                            petName.isNotBlank() -> "Pet: $petName"
+                            else -> null
+                        }
+                        val createdDate = when (val value = notification["created"]) {
+                            is Date -> value
+                            is Number -> Date(value.toLong())
+                            else -> null
+                        }
+                        val timestamp = createdDate?.let {
+                            "Received: ${DateFormat.getDateTimeInstance(
+                                DateFormat.MEDIUM,
+                                DateFormat.SHORT,
+                            ).format(it)}"
+                        }
+                        val attribution = if (isAdmin) {
+                            displayIdentity(adopter).takeIf { it.isNotBlank() }?.let { "Submitted by: $it" }
+                        } else {
+                            displayIdentity(decidedBy).takeIf { it.isNotBlank() }?.let { "Reviewed by: $it" }
+                        }
+                        notificationText.text = listOfNotNull(
+                            message,
+                            petDetails,
+                            attribution,
+                            timestamp,
+                        ).joinToString("\n")
 
                         notificationFrame.setOnClickListener {
                             if (objectId != null && notification["read"] != true) {
@@ -125,6 +156,17 @@ fun Notifications(navController: NavController, email: String) {
                                     changeReadValue = true,
                                     onSuccess = { refreshKey++ },
                                 )
+                            }
+                            val destination = if (isAdmin) {
+                                "manageRequests"
+                            } else {
+                                "adoptionApproval"
+                            }
+                            navController.navigate(
+                                if (requestId.isNullOrBlank()) destination
+                                else "$destination?requestId=$requestId"
+                            ) {
+                                launchSingleTop = true
                             }
                         }
                         removeNotification.setOnClickListener {
